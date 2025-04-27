@@ -1,14 +1,20 @@
 package com.ecommerce.auth.security;
 
-import lombok.RequiredArgsConstructor;
+import com.ecommerce.auth.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@RequiredArgsConstructor
 public class SecurityFilterChain {
+
+    private final JwtAuthenticationFilter tokenFilter;
+
+    public SecurityFilterChain(JwtAuthenticationFilter tokenFilter) {
+        this.tokenFilter = tokenFilter;
+    }
 
     @Bean
     public org.springframework.security.web.SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -17,6 +23,7 @@ public class SecurityFilterChain {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
 
     }
