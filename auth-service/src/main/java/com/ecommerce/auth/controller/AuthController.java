@@ -6,6 +6,7 @@ import com.ecommerce.auth.model.AuthenticationRequest;
 import com.ecommerce.auth.model.AuthenticationResponse;
 import com.ecommerce.auth.model.RegisterRequest;
 import com.ecommerce.auth.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +29,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
         authService.registerUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request) {
         authService.authenticate(request);
         return ResponseEntity.ok(authService.authenticate(request));
     }
