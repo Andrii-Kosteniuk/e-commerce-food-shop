@@ -1,8 +1,8 @@
-package com.ecommerce.auth.model;
+package com.commonexception.exception;
 
 import java.time.LocalDateTime;
 
-public record ApiError (
+public record ErrorResponse(
         LocalDateTime timestamp,
         int status,
         String error,
