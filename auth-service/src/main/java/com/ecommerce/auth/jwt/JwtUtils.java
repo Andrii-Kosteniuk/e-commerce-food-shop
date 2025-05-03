@@ -5,10 +5,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtils {
@@ -20,9 +23,6 @@ public class JwtUtils {
     @Value("${jwt.refresh-token}")
     private long refreshExpirationTime;
 
-    public String generateAccessTokenFromUserName(String username) {
-        return buildToken(username, expirationTime);
-    }
 
     public String generateRefreshToken(String username) {
         return buildToken(username, refreshExpirationTime);
@@ -61,6 +61,23 @@ public class JwtUtils {
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String generateAccessTokenFromUser(UserDetails userDetails) {
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public List<String> getRolesFromToken(String token) {
+        Claims claims = getClaimsFromToken(token);
+        return claims.get("roles", List.class);
     }
 
 
