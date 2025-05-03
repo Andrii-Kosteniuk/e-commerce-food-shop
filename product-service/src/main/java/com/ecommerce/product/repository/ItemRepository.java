@@ -5,10 +5,11 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    Item findByName(@NotBlank String name);
+    Optional<Item> findByName(@NotBlank String name);
     List<Item> findByCategory(@NotBlank Item.Category category);
 
 }
