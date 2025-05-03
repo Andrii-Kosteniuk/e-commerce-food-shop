@@ -1,9 +1,9 @@
-package com.commonexception;
+package com.commonexception.exception;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication()
 public class CommonExceptionApplication {
 
     public static void main(String[] args) {
