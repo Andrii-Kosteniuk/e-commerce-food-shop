@@ -1,16 +1,16 @@
-package com.ecommerce.product.model;
+package com.ecommerce.product.util;
 
+import com.ecommerce.product.dto.ItemCreateRequest;
+import com.ecommerce.product.dto.ItemResponse;
+import com.ecommerce.product.model.Item;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface ItemMapper {
 
-    ItemMapper INSTANCE = Mappers.getMapper(ItemMapper.class);
-
     @Mapping(target = "id", ignore = true)
-    Item itemRequestToItem(ItemRequest itemRequest);
+    Item itemRequestToItem(ItemCreateRequest itemCreateRequest);
 
     @Mapping(target = "quantityInStock", source = "quantity")
     ItemResponse toItemResponse(Item item);
