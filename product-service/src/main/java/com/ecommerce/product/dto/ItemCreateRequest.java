@@ -1,15 +1,13 @@
-package com.ecommerce.product.model;
+package com.ecommerce.product.dto;
 
-import jakarta.persistence.UniqueConstraint;
+import com.ecommerce.product.model.Item;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
-public record ItemRequest(
+public record ItemCreateRequest(
         @NotBlank(message = "Name is required")
         String name,
 
@@ -27,7 +25,7 @@ public record ItemRequest(
         @NotBlank(message = "Image URL is required")
         String imageUrl,
 
-        @CreatedDate()
-        LocalDateTime createdAt
+        @NotNull(message = "Define if this item is available")
+        boolean isAvailable
 ) {
 }

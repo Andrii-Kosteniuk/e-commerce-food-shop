@@ -1,4 +1,4 @@
-package com.ecommerce.auth.model;
+package com.ecommerce.auth.dto;
 
 public record AuthenticationResponse(
         String token,

@@ -1,4 +1,4 @@
-package com.commonexception.exception;
+package com.commonexception.dto;
 
 import java.time.LocalDateTime;
 
