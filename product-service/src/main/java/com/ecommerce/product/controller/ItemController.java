@@ -1,19 +1,19 @@
 package com.ecommerce.product.controller;
 
-
-import com.ecommerce.product.model.Item;
-import com.ecommerce.product.model.ItemMapper;
-import com.ecommerce.product.model.ItemRequest;
-import com.ecommerce.product.model.ItemResponse;
+import com.ecommerce.product.dto.ItemCreateRequest;
+import com.ecommerce.product.dto.ItemResponse;
+import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.ecommerce.product.model.*;
 import com.ecommerce.product.service.ItemService;
+import com.ecommerce.product.util.ItemMapper;
 import jakarta.validation.Valid;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/items")
@@ -23,15 +23,14 @@ public class ItemController {
     private final ItemService itemService;
     private final ItemMapper itemMapper;
 
-
     @PostMapping("/create")
-    public ResponseEntity<ItemResponse> createItem(@RequestBody @Valid ItemRequest request) {
+    public ResponseEntity<ItemResponse> createItem(@RequestBody @Valid ItemCreateRequest request) {
         ItemResponse itemResponse = itemMapper.toItemResponse(itemService.createItem(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(itemResponse);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ItemResponse> updateItem(@PathVariable Long id, @RequestBody @Valid ItemRequest request) {
+    public ResponseEntity<ItemResponse> updateItem(@PathVariable Long id, @RequestBody @Valid ItemUpdateRequest request) {
         ItemResponse itemResponse = itemMapper.toItemResponse(itemService.updateItem(id, request));
         return ResponseEntity.ok(itemResponse);
     }
@@ -42,32 +41,28 @@ public class ItemController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Item> getItem(@PathVariable Long id) {
-        return ResponseEntity.ok(itemService.getItemById(id));
-    }
 
     @GetMapping
-    public ResponseEntity<List<Item>> getAllItems() {
-        return ResponseEntity.ok(itemService.getAllItems());
+    public ResponseEntity<List<ItemResponse>> getAllItems() {
+        List<ItemResponse> itemResponses = itemService.getAllItems()
+                .stream()
+                .map(itemMapper::toItemResponse)
+                .toList();
+
+        return ResponseEntity.ok(itemResponses);
     }
 
     @GetMapping("/name")
-    public ResponseEntity<ItemResponse> getItemByName(@RequestBody ItemRequest request) {
-        Optional<Item> itemByName = itemService.findItemByName(request.name());
-        if (itemByName.isPresent()) {
-            ItemResponse itemResponse = itemMapper.toItemResponse(itemByName.get());
-            return ResponseEntity.ok(itemResponse);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ItemResponse> getItemByName(@RequestParam String name) {
+        return itemService.findItemByName(name)
+                .map(item -> ResponseEntity.ok(itemMapper.toItemResponse(item)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/category")
-    public ResponseEntity<List<ItemResponse>> getItemsByCategory(@RequestBody ItemRequest request) {
-        List<ItemResponse> itemResponses = itemService.getAllItems()
+    public ResponseEntity<List<ItemResponse>> getItemsByCategory(@RequestParam Item.Category category) {
+        List<ItemResponse> itemResponses = itemService.findItemsByCategory(category)
                 .stream()
-                .filter(item -> item.getCategory().equals(request.category()))
                 .map(itemMapper::toItemResponse)
                 .toList();
         return ResponseEntity.ok(itemResponses);
