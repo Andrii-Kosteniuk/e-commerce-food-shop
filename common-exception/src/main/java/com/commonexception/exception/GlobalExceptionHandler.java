@@ -1,7 +1,6 @@
 package com.commonexception.exception;
 
-
-
+import com.commonexception.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +14,6 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
-    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
@@ -38,6 +33,16 @@ public class GlobalExceptionHandler {
                 .orElse("Validation error");
 
         return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, String path) {
