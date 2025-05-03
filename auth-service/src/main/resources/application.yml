@@ -15,6 +15,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+    open-in-view: false
 
 jwt:
   secret: 9fc0ae1d92471e7a4a7d95bb7b7f226c5fc0ab7e3d20979957d0ed9baf8845b8
