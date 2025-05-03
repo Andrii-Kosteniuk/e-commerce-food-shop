@@ -18,6 +18,6 @@ spring:
     open-in-view: false
 
 jwt:
-  secret: 9fc0ae1d92471e7a4a7d95bb7b7f226c5fc0ab7e3d20979957d0ed9baf8845b8
+  secret: ${JWT_SECRET}}
   expiration: 3_600_000 # 1 hour
   refresh-token: 86_400_000 # 24 hours
