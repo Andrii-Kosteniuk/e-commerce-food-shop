@@ -13,9 +13,11 @@
     </parent>
 
     <modules>
+        <module>api-gateway</module>
         <module>auth-service</module>
         <module>common-exception</module>
         <module>product-service</module>
+
     </modules>
 
     <properties>
