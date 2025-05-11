@@ -17,6 +17,7 @@
         <module>auth-service</module>
         <module>common-exception</module>
         <module>product-service</module>
+        <module>config-service</module>
 
     </modules>
 
