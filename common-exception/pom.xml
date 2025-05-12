@@ -3,16 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.ecommerce</groupId>
-        <artifactId>ecommerce-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.5</version>
     </parent>
 
+    <groupId>com.ecommerce</groupId>
     <artifactId>common-exception</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>common-exception</name>
     <description>Module common-exception is used for handling exception</description>
-    <url/>
 
     <properties>
         <java.version>17</java.version>
