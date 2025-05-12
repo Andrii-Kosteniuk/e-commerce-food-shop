@@ -13,11 +13,8 @@
     </parent>
 
     <modules>
-        <module>api-gateway</module>
         <module>auth-service</module>
-        <module>common-exception</module>
         <module>product-service</module>
-        <module>config-service</module>
 
     </modules>
 
@@ -51,6 +48,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <version>3.4.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ecommerce</groupId>
+            <artifactId>common-exception</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
     </dependencies>
