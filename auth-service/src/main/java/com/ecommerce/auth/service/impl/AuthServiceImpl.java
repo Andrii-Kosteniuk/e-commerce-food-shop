@@ -1,51 +1,34 @@
 package com.ecommerce.auth.service.impl;
 
-
-import com.commonexception.exception.ResourceAlreadyExistsException;
-import com.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.auth.dto.AuthenticationRequest;
-import com.ecommerce.auth.dto.AuthenticationResponse;
-import com.ecommerce.auth.dto.RegisterRequest;
 import com.ecommerce.auth.jwt.JwtUtils;
-import com.ecommerce.auth.model.*;
-import com.ecommerce.auth.repository.UserRepository;
 import com.ecommerce.auth.service.AuthService;
-import com.ecommerce.auth.util.UserMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ecommerce.auth.service.UserServiceClient;
+import com.commondto.auth.AuthenticationRequest;
+import com.commondto.auth.AuthenticationResponse;
+import com.commondto.auth.RegisterRequest;
+import com.commondto.user.UserResponse;
+import com.ecommerce.user.model.User;
+import com.ecommerce.user.util.UserMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserServiceClient userServiceClient;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
-
-    @Autowired
-    public AuthServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, AuthenticationManager authenticationManager) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtils = jwtUtils;
-        this.authenticationManager = authenticationManager;
-
-    }
+    private final UserMapper userMapper;
 
     @Override
-    public void registerUser(RegisterRequest registerRequest) {
-        if (userRepository.existsByEmail(registerRequest.email())) {
-            throw new ResourceAlreadyExistsException("User with such an email already exists");
-        }
-
-        User user = userMapper.registerRequestToUser(registerRequest);
-        user.setPassword(passwordEncoder.encode(registerRequest.password()));
-        userRepository.save(user);
+    public void registerUser(RegisterRequest request) {
+        userServiceClient.createNewUser(request);
     }
 
     @Override
@@ -56,11 +39,8 @@ public class AuthServiceImpl implements AuthService {
                         request.password()
                 )
         );
-        var user = getUserFromRequest(request.email());
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid credentials. Try to login again with correct login and password");
-        }
+        var user = (UserDetails) getUserFromRequest(request.email());
 
         var accessToken = jwtUtils.generateAccessTokenFromUser(user);
         var refreshToken = jwtUtils.generateRefreshToken(request.email());
@@ -70,7 +50,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User getUserFromRequest(String username) {
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User with such an email does not exist"));
+        log.info("Attempting to load user by username: {}", username);
+
+        UserResponse userByEmail = userServiceClient.getUserForLogin(username);
+        return userMapper.userResponceToUser(userByEmail);
     }
 }
