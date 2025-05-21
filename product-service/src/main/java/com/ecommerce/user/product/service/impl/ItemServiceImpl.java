@@ -25,7 +25,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item createItem(ItemCreateRequest itemCreateRequest) {
         itemRepository.findByName(itemCreateRequest.name()).ifPresent(item -> {
-            throw new ResourceAlreadyExistsException(item.getClass());
+            throw new ResourceAlreadyExistsException(
+                    String.format("Item with name %s already exists", itemCreateRequest.name()));
         });
 
         Item item = itemMapper.itemRequestToItem(itemCreateRequest);
