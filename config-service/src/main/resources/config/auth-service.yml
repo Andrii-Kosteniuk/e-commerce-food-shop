@@ -9,7 +9,18 @@ spring:
     username: postgres
     password: ${USER_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  cloud:
+    discovery:
+      enabled: true
 
+  main:
+    allow-bean-definition-overriding: true
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
   jpa:
     hibernate:
       ddl-auto: update
