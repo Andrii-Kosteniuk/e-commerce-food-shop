@@ -15,13 +15,13 @@
     <modules>
         <module>auth-service</module>
         <module>product-service</module>
-
+        <module>user-service</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <spring.boot.version>3.4.5</spring.boot.version>
-        <spring.boot.maven.plagin.version>3.4.5</spring.boot.maven.plagin.version>
+        <spring.boot.maven.plugin.version>3.4.5</spring.boot.maven.plugin.version>
         <spring.boot.dependencies.version>3.4.5</spring.boot.dependencies.version>
     </properties>
 
@@ -56,6 +56,12 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.ecommerce</groupId>
+            <artifactId>common-dto</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -65,7 +71,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring.boot.maven.plagin.version}</version>
+                    <version>${spring.boot.maven.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
