@@ -30,4 +30,9 @@ public class UserController {
         return userMapper.userToUserResponse(user);
     }
 
+    @GetMapping("/authenticated-user")
+    public User getAuthenticatedUser() {
+        return userService.getAuthenticatedUser();
+    }
+
 }
