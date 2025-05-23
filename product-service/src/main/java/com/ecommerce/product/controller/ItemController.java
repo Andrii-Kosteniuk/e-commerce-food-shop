@@ -3,7 +3,7 @@ package com.ecommerce.product.controller;
 import com.ecommerce.product.dto.ItemCreateRequest;
 import com.ecommerce.product.dto.ItemResponse;
 import com.ecommerce.product.dto.ItemUpdateRequest;
-import com.ecommerce.product.model.Item;
+import com.ecommerce.product.model.Category;
 import com.ecommerce.product.service.ItemService;
 import com.ecommerce.product.util.ItemMapper;
 import jakarta.validation.Valid;
@@ -52,15 +52,15 @@ public class ItemController {
         return ResponseEntity.ok(itemResponses);
     }
 
-    @GetMapping("/name")
-    public ResponseEntity<ItemResponse> getItemByName(@RequestParam String name) {
+    @GetMapping("/item/{name}")
+    public ResponseEntity<ItemResponse> getItemByName(@PathVariable("name") String name) {
         return itemService.findItemByName(name)
                 .map(item -> ResponseEntity.ok(itemMapper.toItemResponse(item)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/category")
-    public ResponseEntity<List<ItemResponse>> getItemsByCategory(@RequestParam Item.Category category) {
+    @GetMapping("/category/{name}")
+    public ResponseEntity<List<ItemResponse>> getItemsByCategory(@PathVariable("name") Category category) {
         List<ItemResponse> itemResponses = itemService.getItemsByCategoryName(category)
                 .stream()
                 .map(itemMapper::toItemResponse)
