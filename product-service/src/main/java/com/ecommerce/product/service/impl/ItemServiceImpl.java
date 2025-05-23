@@ -1,17 +1,18 @@
-package com.ecommerce.user.product.service.impl;
+package com.ecommerce.product.service.impl;
 
 import com.commonexception.exception.ResourceAlreadyExistsException;
 import com.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.user.product.model.Item;
-import com.ecommerce.user.product.util.ItemMapper;
-import com.ecommerce.user.product.dto.ItemCreateRequest;
-import com.ecommerce.user.product.dto.ItemUpdateRequest;
-import com.ecommerce.user.product.repository.ItemRepository;
-import com.ecommerce.user.product.service.ItemService;
+import com.ecommerce.product.dto.ItemCreateRequest;
+import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.ecommerce.product.model.Item;
+import com.ecommerce.product.repository.ItemRepository;
+import com.ecommerce.product.service.ItemService;
+import com.ecommerce.product.util.ItemMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,14 +42,20 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("%s not found", itemUpdateRequest.name())));
 
+        Item.Category newCategory = Arrays.stream(Item.Category.values())
+                .filter(category -> category.name().equalsIgnoreCase(itemUpdateRequest.category()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
         existingItem.setName(itemUpdateRequest.name());
         existingItem.setPrice(itemUpdateRequest.price());
-        existingItem.setCategory(itemUpdateRequest.category());
+        existingItem.setCategory(newCategory);
         existingItem.setImageUrl(itemUpdateRequest.imageUrl());
         existingItem.setUpdatedAt(LocalDateTime.now());
 
         return itemRepository.save(existingItem);
     }
+
     @Override
     public void deleteItem(Long id) {
         itemRepository.deleteById(id);
@@ -70,7 +77,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> findItemsByCategory(Item.Category category) {
-        return itemRepository.findByCategory(category);
+    public List<Item> getItemsByCategoryName(Item.Category category) {
+        return itemRepository.findItemsByCategory(category);
     }
 }
