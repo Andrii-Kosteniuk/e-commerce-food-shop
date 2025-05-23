@@ -37,9 +37,6 @@ public class User implements UserDetails {
     @Column
     private String role;
 
-    @OneToOne(targetEntity = Address.class)
-    private Address address;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
