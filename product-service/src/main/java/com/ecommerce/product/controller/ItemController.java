@@ -1,11 +1,11 @@
-package com.ecommerce.user.product.controller;
+package com.ecommerce.product.controller;
 
-import com.ecommerce.user.product.dto.ItemCreateRequest;
-import com.ecommerce.user.product.dto.ItemResponse;
-import com.ecommerce.user.product.dto.ItemUpdateRequest;
-import com.ecommerce.user.product.model.Item;
-import com.ecommerce.user.product.service.ItemService;
-import com.ecommerce.user.product.util.ItemMapper;
+import com.ecommerce.product.dto.ItemCreateRequest;
+import com.ecommerce.product.dto.ItemResponse;
+import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.ecommerce.product.model.Item;
+import com.ecommerce.product.service.ItemService;
+import com.ecommerce.product.util.ItemMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/items")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/items")
 public class ItemController {
 
     private final ItemService itemService;
     private final ItemMapper itemMapper;
+
 
     @PostMapping("/create")
     public ResponseEntity<ItemResponse> createItem(@RequestBody @Valid ItemCreateRequest request) {
@@ -60,7 +61,7 @@ public class ItemController {
 
     @GetMapping("/category")
     public ResponseEntity<List<ItemResponse>> getItemsByCategory(@RequestParam Item.Category category) {
-        List<ItemResponse> itemResponses = itemService.findItemsByCategory(category)
+        List<ItemResponse> itemResponses = itemService.getItemsByCategoryName(category)
                 .stream()
                 .map(itemMapper::toItemResponse)
                 .toList();

@@ -1,6 +1,6 @@
-package com.ecommerce.user.product.repository;
+package com.ecommerce.product.repository;
 
-import com.ecommerce.user.product.model.Item;
+import com.ecommerce.product.model.Item;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Optional<Item> findByName(@NotBlank String name);
-    List<Item> findByCategory(@NotBlank Item.Category category);
+
+    List<Item> findItemsByCategory(Item.Category category);
 
 }

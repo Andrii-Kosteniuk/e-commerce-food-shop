@@ -1,6 +1,6 @@
-package com.ecommerce.user.product.dto;
+package com.ecommerce.product.dto;
 
-import com.ecommerce.user.product.model.Item;
+import com.ecommerce.product.model.Item;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,7 +20,7 @@ public record ItemCreateRequest(
         Integer quantity,
 
         @NotNull(message = "Category is required")
-        Item.Category category,
+        String category,
 
         @NotBlank(message = "Image URL is required")
         String imageUrl,

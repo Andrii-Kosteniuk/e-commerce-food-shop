@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: common-dto
+
+server:
+  port: 9999

@@ -1,4 +1,4 @@
-package com.ecommerce.user.product.model;
+package com.ecommerce.product.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -44,18 +44,19 @@ public class Item {
 
     public enum Category {
 
-            BEVERAGES,
-            GROCERIES,
-            PASTRIES,
-            VEGETABLES,
-            FRUITS,
-            DAIRY,
-            MEAT,
-            SEAFOOD,
-            SNACKS,
-            BAKERY,
-            FROZEN_FOODS,
-            ORGANIC
+        BEVERAGES,
+        GROCERIES,
+        PASTRIES,
+        VEGETABLES,
+        FRUITS,
+        DAIRY,
+        MEAT,
+        SEAFOOD,
+        SNACKS,
+        BAKERY,
+        FROZEN_FOODS,
+        ORGANIC
 
     }
+
 }

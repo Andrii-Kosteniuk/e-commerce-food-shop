@@ -1,4 +1,4 @@
-package com.ecommerce.user.product.dto;
+package com.ecommerce.product.dto;
 
 import java.math.BigDecimal;
 
@@ -8,5 +8,5 @@ public record ItemResponse(
         String name,
         BigDecimal price,
         String category,
-        Integer quantityInStock,
+        Integer quantity,
         String imageUrl ) {}
