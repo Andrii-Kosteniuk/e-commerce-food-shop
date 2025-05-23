@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Item {
+public class Item  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -41,22 +41,4 @@ public class Item {
     private LocalDateTime updatedAt;
 
     private boolean isAvailable;
-
-    public enum Category {
-
-        BEVERAGES,
-        GROCERIES,
-        PASTRIES,
-        VEGETABLES,
-        FRUITS,
-        DAIRY,
-        MEAT,
-        SEAFOOD,
-        SNACKS,
-        BAKERY,
-        FROZEN_FOODS,
-        ORGANIC
-
-    }
-
 }
