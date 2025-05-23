@@ -4,6 +4,7 @@ import com.commonexception.exception.ResourceAlreadyExistsException;
 import com.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.product.dto.ItemCreateRequest;
 import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
 import com.ecommerce.product.repository.ItemRepository;
 import com.ecommerce.product.service.ItemService;
@@ -42,7 +43,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("%s not found", itemUpdateRequest.name())));
 
-        Item.Category newCategory = Arrays.stream(Item.Category.values())
+        Category newCategory = Arrays.stream(Category.values())
                 .filter(category -> category.name().equalsIgnoreCase(itemUpdateRequest.category()))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -77,7 +78,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getItemsByCategoryName(Item.Category category) {
+    public List<Item> getItemsByCategoryName(Category category) {
         return itemRepository.findItemsByCategory(category);
     }
 }
