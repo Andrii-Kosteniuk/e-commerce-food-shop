@@ -4,7 +4,6 @@ import com.commondto.auth.RegisterRequest;
 import com.commonexception.exception.ResourceAlreadyExistsException;
 import com.commonexception.exception.ResourceNotFoundException;
 
-import com.ecommerce.user.model.Address;
 import com.ecommerce.user.model.User;
 import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.user.util.UserMapper;
@@ -50,12 +49,6 @@ public class UserServiceImpl implements UserService {
     public User getUserByEmail(String email) {
         log.info("Retrieving user from user-service by email: {}", email);
         return userRepository.findByEmail(email).orElse(null);
-    }
-
-    @Override
-    public Address getUserAddress(Long userId) {
-        User user = getUserById(userId);
-        return user.getAddress();
     }
 
     @Override
