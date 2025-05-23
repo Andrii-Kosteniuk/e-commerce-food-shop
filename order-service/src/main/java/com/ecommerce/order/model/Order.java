@@ -1,5 +1,6 @@
 package com.ecommerce.order.model;
 
+import com.commondto.product.OrderedItemDTO;
 import com.ecommerce.deliveryservice.model.DeliveryInfo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ public class Order {
 
     @ElementCollection
     @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
-    private List<OrderedItem> items;
+    private List<OrderedItemDTO> items;
 
     private BigDecimal totalPrice;
 
@@ -34,12 +35,6 @@ public class Order {
     private OrderStatus status;
 
     private LocalDateTime orderDate;
-
-    private LocalDateTime deliveryDate;
-
-    private String paymentMethod;
-
-    private boolean isPaid;
 
     @Embedded
     private DeliveryInfo deliveryInfo;
