@@ -1,5 +1,6 @@
 package com.ecommerce.product.service;
 
+import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
 import com.ecommerce.product.dto.ItemCreateRequest;
 import com.ecommerce.product.dto.ItemUpdateRequest;
@@ -14,6 +15,6 @@ public interface ItemService {
     Optional<Item> getItemById(Long id);
     List<Item> getAllItems();
     Optional<Item> findItemByName(String name);
-    List<Item> getItemsByCategoryName(Item.Category category);
+    List<Item> getItemsByCategoryName(Category category);
 
 }
