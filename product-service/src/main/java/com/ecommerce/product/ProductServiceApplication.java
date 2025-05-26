@@ -3,7 +3,7 @@ package com.ecommerce.product;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"com.ecommerce.product", "com.ecommerce.auth", "com.commonexception.exception"})
+@SpringBootApplication(scanBasePackages = {"com.ecommerce.product", "com.ecommerce.auth","com.commonexception.exception"})
 public class ProductServiceApplication {
 
     public static void main(String[] args) {
