@@ -2,8 +2,8 @@ package com.ecommerce.product.service;
 
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
-import com.ecommerce.product.dto.ItemCreateRequest;
-import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.commondto.product.ItemCreateRequest;
+import com.commondto.product.ItemUpdateRequest;
 
 import java.util.List;
 import java.util.Optional;
