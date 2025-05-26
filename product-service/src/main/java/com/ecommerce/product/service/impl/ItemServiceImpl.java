@@ -2,8 +2,8 @@ package com.ecommerce.product.service.impl;
 
 import com.commonexception.exception.ResourceAlreadyExistsException;
 import com.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.product.dto.ItemCreateRequest;
-import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.commondto.product.ItemCreateRequest;
+import com.commondto.product.ItemUpdateRequest;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
 import com.ecommerce.product.repository.ItemRepository;

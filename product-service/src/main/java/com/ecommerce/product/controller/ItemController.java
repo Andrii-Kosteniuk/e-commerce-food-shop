@@ -1,8 +1,8 @@
 package com.ecommerce.product.controller;
 
-import com.ecommerce.product.dto.ItemCreateRequest;
-import com.ecommerce.product.dto.ItemResponse;
-import com.ecommerce.product.dto.ItemUpdateRequest;
+import com.commondto.product.ItemCreateRequest;
+import com.commondto.product.ItemResponse;
+import com.commondto.product.ItemUpdateRequest;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.service.ItemService;
 import com.ecommerce.product.util.ItemMapper;

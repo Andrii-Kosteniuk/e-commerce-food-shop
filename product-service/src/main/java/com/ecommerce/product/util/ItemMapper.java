@@ -1,7 +1,7 @@
 package com.ecommerce.product.util;
 
-import com.ecommerce.product.dto.ItemCreateRequest;
-import com.ecommerce.product.dto.ItemResponse;
+import com.commondto.product.ItemCreateRequest;
+import com.commondto.product.ItemResponse;
 import com.ecommerce.product.model.Item;
 import org.mapstruct.Mapper;
 

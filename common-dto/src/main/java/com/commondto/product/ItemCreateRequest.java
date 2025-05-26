@@ -1,6 +1,5 @@
-package com.ecommerce.product.dto;
+package com.commondto.product;
 
-import com.ecommerce.product.model.Item;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
