@@ -10,6 +10,7 @@ import java.util.Collections;
 
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
+
     private final String email;
     private final String password;
     private final String role;
