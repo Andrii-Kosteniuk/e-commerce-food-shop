@@ -1,18 +1,17 @@
 package com.ecommerce.user.service;
 
 import com.commondto.auth.RegisterRequest;
+import com.commondto.user.UserResponse;
 import com.commonexception.exception.ResourceAlreadyExistsException;
 import com.commonexception.exception.ResourceNotFoundException;
 
 import com.ecommerce.user.model.User;
 import com.ecommerce.user.repository.UserRepository;
-import com.ecommerce.user.util.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +23,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserMapper userMapper;
-
 
     @Override
     public User createUser(RegisterRequest request) {
@@ -36,10 +33,14 @@ public class UserServiceImpl implements UserService {
             throw new ResourceAlreadyExistsException("User with such an email already exists");
         }
 
-        User user = userMapper.userRequestToUser(request);
+        User user = new User();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setRole(request.role());
 
         log.info("Creating new user in user-service:");
-        user.setPassword(passwordEncoder.encode(request.password()));
         return userRepository.save(user);
     }
 
@@ -57,9 +58,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getRegisteredUser(String email) {
-        return userRepository.findByEmail(email)
+    public UserResponse getRegisteredUser(String email) {
+        log.info("Fetching user with email: {}", email);
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return new UserResponse(
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPassword(),
+                user.getRole()
+        );
     }
 
     @Override
