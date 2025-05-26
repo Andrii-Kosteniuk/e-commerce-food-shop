@@ -1,7 +1,6 @@
 package com.ecommerce.order.model;
 
-import com.commondto.product.OrderedItemDTO;
-import com.ecommerce.deliveryservice.model.DeliveryInfo;
+import com.commondto.product.ItemResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,8 +25,8 @@ public class Order {
     private Long user_id;
 
     @ElementCollection
-    @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
-    private List<OrderedItemDTO> items;
+    @CollectionTable(name = "items")
+    private List<ItemResponse> items;
 
     private BigDecimal totalPrice;
 
@@ -35,8 +34,5 @@ public class Order {
     private OrderStatus status;
 
     private LocalDateTime orderDate;
-
-    @Embedded
-    private DeliveryInfo deliveryInfo;
 
 }
