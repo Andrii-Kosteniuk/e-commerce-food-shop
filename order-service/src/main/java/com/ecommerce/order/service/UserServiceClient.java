@@ -1,7 +1,7 @@
 package com.ecommerce.order.service;
 
+import com.commondto.user.UserResponse;
 
-import com.ecommerce.user.model.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public interface UserServiceClient {
 
     @PostMapping("/authenticated-user")
-    User getAuthenticatedUser();
+    UserResponse getAuthenticatedUser();
 
 
 }
