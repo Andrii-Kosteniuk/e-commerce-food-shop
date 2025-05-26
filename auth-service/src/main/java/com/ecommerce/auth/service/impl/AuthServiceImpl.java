@@ -1,19 +1,17 @@
 package com.ecommerce.auth.service.impl;
 
+import com.commondto.user.UserResponse;
+import com.ecommerce.auth.AuthMapper;
 import com.ecommerce.auth.jwt.JwtUtils;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.UserServiceClient;
 import com.commondto.auth.AuthenticationRequest;
 import com.commondto.auth.AuthenticationResponse;
 import com.commondto.auth.RegisterRequest;
-import com.commondto.user.UserResponse;
-import com.ecommerce.user.model.User;
-import com.ecommerce.user.util.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,15 +22,17 @@ public class AuthServiceImpl implements AuthService {
     private final UserServiceClient userServiceClient;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
-    private final UserMapper userMapper;
+    private final AuthMapper authMapper;
 
     @Override
     public void registerUser(RegisterRequest request) {
+        log.info("Registering user in auth-service: {}", request.email());
         userServiceClient.createNewUser(request);
     }
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        log.info("Authenticating user...");
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -40,19 +40,19 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        var user = (UserDetails) getUserFromRequest(request.email());
+        var user =  getUserFromRequest(request.email());
+        log.info("User details =>  {}", user);
 
-        var accessToken = jwtUtils.generateAccessTokenFromUser(user);
+        var accessToken = jwtUtils.generateAccessTokenFromUser(authMapper.toUserDetails(user));
         var refreshToken = jwtUtils.generateRefreshToken(request.email());
 
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 
     @Override
-    public User getUserFromRequest(String username) {
+    public UserResponse getUserFromRequest(String username) {
         log.info("Attempting to load user by username: {}", username);
 
-        UserResponse userByEmail = userServiceClient.getUserForLogin(username);
-        return userMapper.userResponceToUser(userByEmail);
+        return userServiceClient.getUserForLogin(username);
     }
 }

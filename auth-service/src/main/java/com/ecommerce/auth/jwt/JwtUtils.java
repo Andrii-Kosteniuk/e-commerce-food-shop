@@ -63,7 +63,7 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateAccessTokenFromUser(UserDetails userDetails) {
+    public String generateAccessTokenFromUser( UserDetails userDetails) {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claim("roles", userDetails.getAuthorities().stream()

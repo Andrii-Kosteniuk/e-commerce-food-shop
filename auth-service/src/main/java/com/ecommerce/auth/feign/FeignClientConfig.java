@@ -1,4 +1,4 @@
-package com.ecommerce.auth.config;
+package com.ecommerce.auth.feign;
 
 import com.ecommerce.auth.decoder.CustomFeignErrorDecoder;
 import feign.codec.ErrorDecoder;
