@@ -9,6 +9,15 @@ spring:
     username: postgres
     password: ${USER_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    open-in-view: false
   cloud:
     discovery:
       enabled: true
@@ -21,14 +30,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    open-in-view: false
+
 
 jwt:
   secret: ${JWT_SECRET}

@@ -4,28 +4,25 @@ server:
 spring:
   application:
     name: user-service
-  main:
-    allow-bean-definition-overriding: true
 
   datasource:
     url: jdbc:postgresql://localhost:5432/user_service
     username: postgres
     password: ${USER_PASSWORD}
     driver-class-name: org.postgresql.Driver
-  cloud:
-    discovery:
-      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
 eureka:
   instance:
     hostname: localhost
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    open-in-view: false
