@@ -19,13 +19,14 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "order_id")
     private Long id;
 
     @JoinColumn(name = "user_id")
-    private Long user_id;
+    private Long userId;
 
     @ElementCollection
-    @CollectionTable(name = "items")
+    @CollectionTable(name = "items", joinColumns = @JoinColumn(name = "item_id"))
     private List<ItemResponse> items;
 
     private BigDecimal totalPrice;
@@ -33,6 +34,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    private LocalDateTime orderDate;
+    private LocalDateTime orderCreateDate;
+    private LocalDateTime orderUpdateDate;
 
 }
