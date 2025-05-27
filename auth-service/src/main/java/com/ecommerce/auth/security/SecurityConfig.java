@@ -1,6 +1,7 @@
 package com.ecommerce.auth.security;
 
 import com.commondto.user.UserResponse;
+import com.ecommerce.auth.AuthMapper;
 import com.ecommerce.auth.service.UserServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     private final UserServiceClient userServiceClient;
+    private final AuthMapper authMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -33,15 +35,12 @@ public class SecurityConfig {
         return username -> {
             log.info("Calling user-service to retrieve user by email: {}", username);
             UserResponse user = userServiceClient.getUserForLogin(username);
+            log.debug("User retrieved: {}", user);
             if (user == null) {
                 throw new UsernameNotFoundException("User not found: " + username);
             }
 
-            return new CustomUserDetails(
-                    user.email(),
-                    user.password(),
-                    user.role()
-            );
+            return authMapper.toUserDetails(user);
         };
     }
 

@@ -1,6 +1,8 @@
 package com.ecommerce.auth.security;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,12 +10,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-@RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
 
-    private final String email;
-    private final String password;
-    private final String role;
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class CustomUserDetails implements UserDetails {
+    private  Long id;
+    private String firstName;
+    private String lastName;
+    private  String email;
+    private  String password;
+    private  String role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
