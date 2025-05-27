@@ -13,11 +13,12 @@
     </parent>
 
     <modules>
-        <module>auth-service</module>
-        <module>product-service</module>
-        <module>user-service</module>
         <module>common-dto</module>
         <module>common-exception</module>
+        <module>auth-service</module>
+        <module>user-service</module>
+        <module>product-service</module>
+        <module>order-service</module>
     </modules>
 
     <properties>
