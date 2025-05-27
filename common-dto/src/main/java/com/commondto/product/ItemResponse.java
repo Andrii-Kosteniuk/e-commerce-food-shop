@@ -1,7 +1,8 @@
 package com.commondto.product;
 
-import java.math.BigDecimal;
 import jakarta.persistence.Embeddable;
+
+import java.math.BigDecimal;
 
 @Embeddable
 public record ItemResponse(
@@ -9,5 +10,4 @@ public record ItemResponse(
         String name,
         BigDecimal price,
         String category,
-        Integer quantity,
-        String imageUrl ) {}
+        Integer quantity) {}

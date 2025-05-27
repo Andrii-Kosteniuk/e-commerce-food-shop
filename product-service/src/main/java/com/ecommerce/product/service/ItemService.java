@@ -6,15 +6,14 @@ import com.commondto.product.ItemCreateRequest;
 import com.commondto.product.ItemUpdateRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ItemService {
     Item createItem(ItemCreateRequest itemCreateRequest);
     Item updateItem(Long id, ItemUpdateRequest itemUpdateRequest);
     void deleteItem(Long id);
-    Optional<Item> getItemById(Long id);
+    Item getItemById(Long id);
     List<Item> getAllItems();
-    Optional<Item> findItemByName(String name);
+    Item getItemByName(String name);
     List<Item> getItemsByCategoryName(Category category);
 
 }

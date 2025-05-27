@@ -4,6 +4,7 @@ import com.commondto.product.ItemCreateRequest;
 import com.commondto.product.ItemResponse;
 import com.commondto.product.ItemUpdateRequest;
 import com.ecommerce.product.model.Category;
+import com.ecommerce.product.model.Item;
 import com.ecommerce.product.service.ItemService;
 import com.ecommerce.product.util.ItemMapper;
 import jakarta.validation.Valid;
@@ -54,9 +55,14 @@ public class ItemController {
 
     @GetMapping("/item/{name}")
     public ResponseEntity<ItemResponse> getItemByName(@PathVariable("name") String name) {
-        return itemService.findItemByName(name)
-                .map(item -> ResponseEntity.ok(itemMapper.toItemResponse(item)))
-                .orElse(ResponseEntity.notFound().build());
+        Item item = itemService.getItemByName(name);
+        return ResponseEntity.ok(itemMapper.toItemResponse(item));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemResponse> getItemById(@PathVariable("id") Long itemId) {
+        Item item = itemService.getItemById(itemId);
+        return ResponseEntity.ok(itemMapper.toItemResponse(item));
     }
 
     @GetMapping("/category/{name}")

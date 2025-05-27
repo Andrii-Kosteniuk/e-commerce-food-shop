@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -39,9 +38,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item updateItem(Long id, ItemUpdateRequest itemUpdateRequest) {
-        Item existingItem = getItemById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("%s not found", itemUpdateRequest.name())));
+        Item existingItem = getItemById(id);
 
         Category newCategory = Arrays.stream(Category.values())
                 .filter(category -> category.name().equalsIgnoreCase(itemUpdateRequest.category()))
@@ -63,8 +60,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Optional<Item> getItemById(Long id) {
-        return itemRepository.findById(id);
+    public Item getItemById(Long id) {
+        return itemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Item with id %d not found", id)));
     }
 
     @Override
@@ -73,8 +71,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Optional<Item> findItemByName(String name) {
-        return itemRepository.findByName(name);
+    public Item getItemByName(String name) {
+        return itemRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Item with name %s not found", name)));
     }
 
     @Override
