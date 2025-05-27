@@ -1,6 +1,5 @@
 package com.commondto.user;
 
-
 public record UserResponse (
 
         Long id,

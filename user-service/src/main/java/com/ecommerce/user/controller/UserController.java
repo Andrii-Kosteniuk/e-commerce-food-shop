@@ -28,9 +28,4 @@ public class UserController {
         return ResponseEntity.ok(userService.getRegisteredUser(email));
     }
 
-    @GetMapping("/authenticated-user")
-    public User getAuthenticatedUser() {
-        return userService.getAuthenticatedUser();
-    }
-
 }
