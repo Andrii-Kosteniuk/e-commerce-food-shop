@@ -5,9 +5,11 @@ import com.commondto.auth.AuthenticationResponse;
 
 import com.commondto.auth.RegisterRequest;
 import com.commondto.user.UserResponse;
+import com.ecommerce.auth.security.CustomUserDetails;
 
 public interface AuthService {
     void registerUser(RegisterRequest registerRequest);
     AuthenticationResponse authenticate(AuthenticationRequest request);
     UserResponse getUserFromRequest(String username);
+    CustomUserDetails getAuthenticatedUser();
 }

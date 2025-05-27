@@ -3,6 +3,7 @@ package com.ecommerce.auth.service.impl;
 import com.commondto.user.UserResponse;
 import com.ecommerce.auth.AuthMapper;
 import com.ecommerce.auth.jwt.JwtUtils;
+import com.ecommerce.auth.security.CustomUserDetails;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.UserServiceClient;
 import com.commondto.auth.AuthenticationRequest;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -54,5 +57,13 @@ public class AuthServiceImpl implements AuthService {
         log.info("Attempting to load user by username: {}", username);
 
         return userServiceClient.getUserForLogin(username);
+    }
+
+    @Override
+    public CustomUserDetails getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        return   principal instanceof CustomUserDetails ? (CustomUserDetails) principal : null;
+
     }
 }

@@ -1,7 +1,10 @@
 package com.ecommerce.auth.controller;
 
+import com.commondto.user.UserResponse;
 import com.ecommerce.auth.AuthMapper;
 import com.ecommerce.auth.jwt.JwtUtils;
+import com.ecommerce.auth.security.CustomUserDetails;
+import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.impl.AuthServiceImpl;
 import com.commondto.auth.AuthenticationRequest;
 import com.commondto.auth.AuthenticationResponse;
@@ -12,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -25,6 +25,7 @@ public class AuthController {
     private final AuthServiceImpl authServiceImpl;
     private final JwtUtils jwtUtils;
     private final AuthMapper authMapper;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
@@ -45,8 +46,20 @@ public class AuthController {
 
         String userName = jwtUtils.getSubjectFromToken(request.refreshToken());
         var user = authServiceImpl.getUserFromRequest(userName);
-        String newAccessToken = jwtUtils.generateAccessTokenFromUser(authMapper.toUserDetails(user));
+        String newAccessToken = jwtUtils.generateAccessTokenFromUser(getUserDetails(user));
 
         return ResponseEntity.ok().body(new AuthenticationResponse(newAccessToken, request.refreshToken()));
     }
+
+    @GetMapping("/user-details")
+    public CustomUserDetails getUserDetails(@RequestBody UserResponse user) {
+        return authMapper.toUserDetails(user);
+    }
+
+
+    @GetMapping("/authenticated-user")
+    public UserResponse getAuthenticatedUser() {
+        return authMapper.toUserResponse(authService.getAuthenticatedUser());
+    }
+
 }
