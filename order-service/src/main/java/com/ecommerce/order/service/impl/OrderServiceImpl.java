@@ -1,9 +1,10 @@
 package com.ecommerce.order.service.impl;
 
-import com.commondto.order.OrderRequest;
-import com.commondto.product.ItemResponse;
-import com.commondto.user.UserResponse;
-import com.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.commondto.order.OrderItemRequest;
+import com.ecommerce.commondto.order.OrderRequest;
+import com.ecommerce.commondto.product.ItemResponse;
+import com.ecommerce.commondto.user.UserResponse;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.order.feign.FeignAuthClient;
 import com.ecommerce.order.model.Order;
 import com.ecommerce.order.model.OrderStatus;
@@ -32,24 +33,46 @@ public class OrderServiceImpl implements OrderService {
         log.info("Retrieving authenticated user ...");
 
         UserResponse user = feignAuthClient.getAuthenticatedUser();
+
+        List<ItemResponse> orderItems = getOrderItems(request);
+
+        log.info("Retrieved items for order: {}", orderItems);
+
+        for (ItemResponse item : orderItems){
+            orderItemService.reduceItemStock(item.id(), item.quantity());
+        }
+
         Order order = new Order();
-
-        List<ItemResponse> orderItems = mapToOrderItems(request);
-
         order.setUserId(user.id());
         order.setItems(orderItems);
         order.setOrderCreateDate(LocalDateTime.now());
         order.setStatus(OrderStatus.NEW);
         order.setTotalPrice(calculateTotalPrice(orderItems));
-        log.info("Creating order with details: {}", order);
+
+        log.info("Order was created successfully: {}", order);
 
         return orderRepository.save(order);
     }
 
-    private List<ItemResponse> mapToOrderItems(OrderRequest request) {
-        return request.ids().stream()
-                .map(orderItemService::getItemById)
+    private List<ItemResponse> getOrderItems(OrderRequest request) {
+        return request.items().stream()
+                .map(orderItemRequest -> {
+                    ItemResponse item = orderItemService.getItemById(orderItemRequest.id());
+                    checkIfRequestedItemsAreAvailable(orderItemRequest, item);
+                    return new ItemResponse(item.id(), item.name(), item.price(), orderItemRequest.quantity(), item.category(), item.available());
+                })
                 .toList();
+    }
+
+    private static void checkIfRequestedItemsAreAvailable(OrderItemRequest orderItemRequest, ItemResponse item) {
+        if (! item.available() || item.quantity() <= 0) {
+            log.error("Item {} not available or out of stock", item.name());
+            throw new ResourceNotFoundException("Item " + item.name() + " is not available or out of stock.");
+        }
+
+        if (item.quantity() - orderItemRequest.quantity() < 0) {
+            throw new IllegalArgumentException("You can only give " + item.quantity() + " item of " + item.name() + " in your order, but you tried to give " + orderItemRequest.quantity());
+        }
     }
 
     public BigDecimal calculateTotalPrice(List<ItemResponse> items) {
@@ -71,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
         Order faundOrder = getOrderById(orderId);
         log.info("Order found: {}", faundOrder);
 
-        List<ItemResponse> orderItems = mapToOrderItems(orderRequest);
+        List<ItemResponse> orderItems = getOrderItems(orderRequest);
 
         faundOrder.setItems(orderItems);
         faundOrder.setTotalPrice(calculateTotalPrice(orderItems));
