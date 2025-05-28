@@ -1,4 +1,4 @@
-package com.commondto.product;
+package com.ecommerce.commondto.product;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +16,9 @@ public record ItemUpdateRequest(
 
         @NotNull(message = "Category is required")
         String category,
+
+        @Positive(message = "Quantity must be positive")
+        int quantity,
 
         @NotBlank(message = "Image URL is required")
         String imageUrl

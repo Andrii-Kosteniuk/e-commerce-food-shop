@@ -23,14 +23,14 @@ public class Item  {
     private Long id;
 
     @NotBlank
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
     @NotNull
     private BigDecimal price;
 
     @NotNull
-    private Integer quantity;
+    private int quantity;
 
     @Enumerated(EnumType.STRING)
     private Category category;
@@ -41,5 +41,5 @@ public class Item  {
 
     private LocalDateTime updatedAt;
 
-    private boolean isAvailable;
+    private boolean available;
 }
