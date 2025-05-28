@@ -1,4 +1,4 @@
-package com.commondto.user;
+package com.ecommerce.commondto.user;
 
 public record UserResponse (
 

@@ -2,8 +2,8 @@ package com.ecommerce.product.service;
 
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
-import com.commondto.product.ItemCreateRequest;
-import com.commondto.product.ItemUpdateRequest;
+import com.ecommerce.commondto.product.ItemCreateRequest;
+import com.ecommerce.commondto.product.ItemUpdateRequest;
 
 import java.util.List;
 
@@ -15,5 +15,6 @@ public interface ItemService {
     List<Item> getAllItems();
     Item getItemByName(String name);
     List<Item> getItemsByCategoryName(Category category);
+    void reduceItemStock(Long itemId, int quantity);
 
 }

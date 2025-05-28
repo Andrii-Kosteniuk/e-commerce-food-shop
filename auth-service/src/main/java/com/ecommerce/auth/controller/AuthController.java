@@ -1,15 +1,15 @@
 package com.ecommerce.auth.controller;
 
-import com.commondto.user.UserResponse;
+import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.auth.AuthMapper;
 import com.ecommerce.auth.jwt.JwtUtils;
 import com.ecommerce.auth.security.CustomUserDetails;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.impl.AuthServiceImpl;
-import com.commondto.auth.AuthenticationRequest;
-import com.commondto.auth.AuthenticationResponse;
-import com.commondto.auth.RefreshTokenRequest;
-import com.commondto.auth.RegisterRequest;
+import com.ecommerce.commondto.auth.AuthenticationRequest;
+import com.ecommerce.commondto.auth.AuthenticationResponse;
+import com.ecommerce.commondto.auth.RefreshTokenRequest;
+import com.ecommerce.commondto.auth.RegisterRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

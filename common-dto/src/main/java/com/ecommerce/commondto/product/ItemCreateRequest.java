@@ -1,4 +1,4 @@
-package com.commondto.product;
+package com.ecommerce.commondto.product;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package com.commonexception.dto;
+package com.ecommerce.commonexception.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

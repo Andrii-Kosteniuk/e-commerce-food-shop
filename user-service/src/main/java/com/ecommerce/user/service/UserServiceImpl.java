@@ -1,11 +1,12 @@
 package com.ecommerce.user.service;
 
-import com.commondto.auth.RegisterRequest;
-import com.commondto.user.UserResponse;
-import com.commonexception.exception.ResourceAlreadyExistsException;
-import com.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.commondto.auth.RegisterRequest;
+import com.ecommerce.commondto.user.UserResponse;
+import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 
 import com.ecommerce.user.model.User;
+import com.ecommerce.user.model.UserMapper;
 import com.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Override
     public User createUser(RegisterRequest request) {
@@ -56,18 +58,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getRegisteredUser(String email) {
+
         log.info("Fetching user with email: {}", email);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        log.info("User found: {}", user);
 
-        return new UserResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getRole()
-        );
+        return userMapper.userToUserResponse(user);
     }
 
 }

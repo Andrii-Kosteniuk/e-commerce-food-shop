@@ -1,13 +1,13 @@
-package com.commonexception;
+package com.ecommerce.commondto;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication()
-public class CommonExceptionApplication {
+@SpringBootApplication
+public class CommonDtoApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CommonExceptionApplication.class, args);
+        SpringApplication.run(CommonDtoApplication.class, args);
     }
 
 }

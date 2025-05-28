@@ -1,8 +1,8 @@
 package com.ecommerce.auth.decoder;
 
-import com.commonexception.exception.ResourceAccessDeniedException;
-import com.commonexception.exception.ResourceAlreadyExistsException;
-import com.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.commonexception.exception.ResourceAccessDeniedException;
+import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 

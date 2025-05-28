@@ -1,4 +1,4 @@
-package com.commondto.auth;
+package com.ecommerce.commondto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

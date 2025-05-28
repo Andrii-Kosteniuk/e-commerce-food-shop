@@ -1,14 +1,13 @@
 package com.ecommerce.product.service.impl;
 
-import com.commonexception.exception.ResourceAlreadyExistsException;
-import com.commonexception.exception.ResourceNotFoundException;
-import com.commondto.product.ItemCreateRequest;
-import com.commondto.product.ItemUpdateRequest;
+import com.ecommerce.commondto.product.ItemCreateRequest;
+import com.ecommerce.commondto.product.ItemUpdateRequest;
+import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
 import com.ecommerce.product.repository.ItemRepository;
 import com.ecommerce.product.service.ItemService;
-import com.ecommerce.product.util.ItemMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,6 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final ItemMapper itemMapper;
 
     @Override
     public Item createItem(ItemCreateRequest itemCreateRequest) {
@@ -30,9 +28,18 @@ public class ItemServiceImpl implements ItemService {
                     String.format("Item with name %s already exists", itemCreateRequest.name()));
         });
 
-        Item item = itemMapper.itemRequestToItem(itemCreateRequest);
+        Item item = new Item();
+        item.setName(itemCreateRequest.name());
+        item.setPrice(itemCreateRequest.price());
+        item.setCategory(Arrays.stream(Category.values())
+                .filter(category -> category.name().equalsIgnoreCase(itemCreateRequest.category()))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found")));
+        item.setImageUrl(itemCreateRequest.imageUrl());
+        item.setQuantity(itemCreateRequest.quantity());
         item.setCreatedAt(LocalDateTime.now());
         item.setAvailable(true);
+
         return itemRepository.save(item);
     }
 
@@ -49,7 +56,11 @@ public class ItemServiceImpl implements ItemService {
         existingItem.setPrice(itemUpdateRequest.price());
         existingItem.setCategory(newCategory);
         existingItem.setImageUrl(itemUpdateRequest.imageUrl());
+        existingItem.setQuantity(itemUpdateRequest.quantity());
         existingItem.setUpdatedAt(LocalDateTime.now());
+        if (itemUpdateRequest.quantity() > 1) {
+            existingItem.setAvailable(true);
+        }
 
         return itemRepository.save(existingItem);
     }
@@ -79,5 +90,23 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<Item> getItemsByCategoryName(Category category) {
         return itemRepository.findItemsByCategory(category);
+    }
+
+
+    @Override
+    public void reduceItemStock(Long itemId, int quantity) {
+        Item item = getItemById(itemId);
+
+        if (item.getQuantity() <= 0) {
+            throw new ResourceNotFoundException("Cannot update stock: item is already out of stock");
+        }
+
+        item.setQuantity(item.getQuantity() - quantity);
+        item.setUpdatedAt(LocalDateTime.now());
+        if (item.getQuantity() == 0) {
+            item.setAvailable(false);
+        }
+        itemRepository.save(item);
+
     }
 }

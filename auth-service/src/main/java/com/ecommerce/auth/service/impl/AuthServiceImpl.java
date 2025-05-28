@@ -1,14 +1,14 @@
 package com.ecommerce.auth.service.impl;
 
-import com.commondto.user.UserResponse;
+import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.auth.AuthMapper;
 import com.ecommerce.auth.jwt.JwtUtils;
 import com.ecommerce.auth.security.CustomUserDetails;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.service.UserServiceClient;
-import com.commondto.auth.AuthenticationRequest;
-import com.commondto.auth.AuthenticationResponse;
-import com.commondto.auth.RegisterRequest;
+import com.ecommerce.commondto.auth.AuthenticationRequest;
+import com.ecommerce.commondto.auth.AuthenticationResponse;
+import com.ecommerce.commondto.auth.RegisterRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,7 +40,9 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()
+
                 )
+
         );
 
         var user =  getUserFromRequest(request.email());

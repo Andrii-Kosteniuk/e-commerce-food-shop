@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication(scanBasePackages = {"com.ecommerce.auth", "com.commondto","com.commonexception.exception"})
+@SpringBootApplication(scanBasePackages = {"com.ecommerce.auth", "com.ecommerce.commondto","com.ecommerce.commonexception"})
 @EnableFeignClients(clients = UserServiceClient.class)
 public class AuthServiceApplication {
 

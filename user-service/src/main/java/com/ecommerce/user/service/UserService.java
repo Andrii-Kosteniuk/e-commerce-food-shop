@@ -1,7 +1,7 @@
 package com.ecommerce.user.service;
 
-import com.commondto.auth.RegisterRequest;
-import com.commondto.user.UserResponse;
+import com.ecommerce.commondto.auth.RegisterRequest;
+import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.user.model.User;
 
 public interface UserService {

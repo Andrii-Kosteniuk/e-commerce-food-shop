@@ -1,4 +1,4 @@
-package com.commonexception.exception;
+package com.ecommerce.commonexception.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

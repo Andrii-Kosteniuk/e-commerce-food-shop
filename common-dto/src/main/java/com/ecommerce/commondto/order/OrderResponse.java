@@ -1,6 +1,6 @@
-package com.commondto.order;
+package com.ecommerce.commondto.order;
 
-import com.commondto.product.ItemResponse;
+import com.ecommerce.commondto.product.ItemResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,10 +1,10 @@
 package com.ecommerce.auth.service;
 
-import com.commondto.auth.AuthenticationRequest;
-import com.commondto.auth.AuthenticationResponse;
+import com.ecommerce.commondto.auth.AuthenticationRequest;
+import com.ecommerce.commondto.auth.AuthenticationResponse;
 
-import com.commondto.auth.RegisterRequest;
-import com.commondto.user.UserResponse;
+import com.ecommerce.commondto.auth.RegisterRequest;
+import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.auth.security.CustomUserDetails;
 
 public interface AuthService {

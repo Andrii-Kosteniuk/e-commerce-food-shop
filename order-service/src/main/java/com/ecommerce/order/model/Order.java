@@ -1,6 +1,6 @@
 package com.ecommerce.order.model;
 
-import com.commondto.product.ItemResponse;
+import com.ecommerce.commondto.product.ItemResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

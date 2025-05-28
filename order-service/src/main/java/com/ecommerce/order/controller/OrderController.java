@@ -1,11 +1,12 @@
 package com.ecommerce.order.controller;
 
-import com.commondto.order.OrderResponse;
-import com.commondto.order.OrderRequest;
+import com.ecommerce.commondto.order.OrderResponse;
+import com.ecommerce.commondto.order.OrderRequest;
 import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.model.Order;
 import com.ecommerce.order.service.OrderItemService;
 import com.ecommerce.order.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,9 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final OrderItemService orderItemService;
 
     @PostMapping("/new-order")
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
         log.info("Received request to create order: {}", request);
 
         var order = orderService.createOrder(request);

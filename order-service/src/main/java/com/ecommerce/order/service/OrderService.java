@@ -1,6 +1,6 @@
 package com.ecommerce.order.service;
 
-import com.commondto.order.OrderRequest;
+import com.ecommerce.commondto.order.OrderRequest;
 import com.ecommerce.order.model.Order;
 
 

@@ -1,6 +1,6 @@
 package com.ecommerce.user.model;
 
-import com.commondto.user.UserResponse;
+import com.ecommerce.commondto.user.UserResponse;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

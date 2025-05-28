@@ -1,6 +1,6 @@
 package com.ecommerce.user.config;
 
-import com.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
