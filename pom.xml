@@ -19,6 +19,9 @@
         <module>user-service</module>
         <module>product-service</module>
         <module>order-service</module>
+        <module>api-gateway</module>
+        <module>config-service</module>
+        <module>discovery-service</module>
     </modules>
 
     <properties>
@@ -50,15 +53,11 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring.boot.maven.plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>
