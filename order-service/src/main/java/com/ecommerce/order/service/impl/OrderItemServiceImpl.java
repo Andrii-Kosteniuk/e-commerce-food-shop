@@ -1,6 +1,6 @@
 package com.ecommerce.order.service.impl;
 
-import com.commondto.product.ItemResponse;
+import com.ecommerce.commondto.product.ItemResponse;
 import com.ecommerce.order.feign.FeignItemClient;
 import com.ecommerce.order.service.OrderItemService;
 import lombok.RequiredArgsConstructor;
@@ -29,4 +29,10 @@ public class OrderItemServiceImpl implements OrderItemService {
     public ItemResponse getItemByName(String name) {
         return itemClient.findItemByName(name);
     }
+
+    @Override
+    public void reduceItemStock(Long itemId, int quantity) {
+        itemClient.reduceItemStock(itemId, quantity);
+    }
+
 }

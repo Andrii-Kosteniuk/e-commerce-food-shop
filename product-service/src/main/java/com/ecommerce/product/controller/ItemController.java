@@ -1,8 +1,8 @@
 package com.ecommerce.product.controller;
 
-import com.commondto.product.ItemCreateRequest;
-import com.commondto.product.ItemResponse;
-import com.commondto.product.ItemUpdateRequest;
+import com.ecommerce.commondto.product.ItemCreateRequest;
+import com.ecommerce.commondto.product.ItemResponse;
+import com.ecommerce.commondto.product.ItemUpdateRequest;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Item;
 import com.ecommerce.product.service.ItemService;
@@ -73,4 +73,11 @@ public class ItemController {
                 .toList();
         return ResponseEntity.ok(itemResponses);
     }
+
+    @PutMapping("/update-stock/{itemId}/quantity/{quantity}")
+    void reduceItemStock(@PathVariable Long itemId, @PathVariable int quantity) {
+        itemService.reduceItemStock(itemId, quantity);
+
+    }
+
 }
