@@ -1,9 +1,10 @@
 package com.ecommerce.order.feign;
 
-import com.commondto.product.ItemResponse;
+import com.ecommerce.commondto.product.ItemResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface FeignItemClient {
     @GetMapping
     List<ItemResponse> getAllItems();
 
+    @PutMapping("/update-stock/{itemId}/quantity/{quantity}")
+    void reduceItemStock(@PathVariable Long itemId, @PathVariable int quantity);
 }
