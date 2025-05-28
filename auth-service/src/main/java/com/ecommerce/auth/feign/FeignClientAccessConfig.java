@@ -2,7 +2,6 @@ package com.ecommerce.auth.feign;
 
 import com.ecommerce.auth.jwt.JwtAuthenticationFilter;
 import feign.RequestInterceptor;
-import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
