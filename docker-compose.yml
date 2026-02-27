@@ -1,0 +1,56 @@
+services:
+  postgres:
+    container_name: ms_pg_sql
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Adrenalina22!
+      POSTGRES_DB: ecommerce_db
+    ports:
+      - "5432:5432"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+#  pgadmin:
+#    container_name: ms_pgadmin
+#    image: dpage/pgadmin4
+#    environment:
+#      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+#      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-postgres}
+#      - PGADMIN_CONFIG_SERVER_MODE=False
+#      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+#    ports:
+#      - "${PGADMIN_PORT:-5050}:80"
+#    depends_on:
+#      - postgres
+#    restart: unless-stopped
+#
+#  mongo:
+#    image: mongo
+#    restart: always
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: andrii
+#      MONGO_INITDB_ROOT_PASSWORD: andrii
+#
+#  mongo-express:
+#      image: mongo-express
+#      restart: always
+#      ports:
+#        - 8085:8085
+#      environment:
+#        ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+#        ME_CONFIG_BASICAUTH_ENABLED: true
+#        ME_CONFIG_BASICAUTH_USERNAME: andrii
+#        ME_CONFIG_BASICAUTH_PASSWORD: andrii
+
+networks:
+  microservices-net:
+    driver: bridge
+
+
+
+volumes:
+  postgres:
+  pgadmin:
+  mongo:
