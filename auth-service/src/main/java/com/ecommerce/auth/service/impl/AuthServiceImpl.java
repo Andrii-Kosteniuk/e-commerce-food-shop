@@ -1,7 +1,7 @@
 package com.ecommerce.auth.service.impl;
 
 import com.ecommerce.commondto.user.UserResponse;
-import com.ecommerce.auth.AuthMapper;
+import com.ecommerce.auth.mapper.AuthMapper;
 import com.ecommerce.auth.jwt.JwtUtils;
 import com.ecommerce.auth.security.CustomUserDetails;
 import com.ecommerce.auth.service.AuthService;

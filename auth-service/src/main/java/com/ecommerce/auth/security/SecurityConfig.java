@@ -1,7 +1,7 @@
 package com.ecommerce.auth.security;
 
 import com.ecommerce.commondto.user.UserResponse;
-import com.ecommerce.auth.AuthMapper;
+import com.ecommerce.auth.mapper.AuthMapper;
 import com.ecommerce.auth.service.UserServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
