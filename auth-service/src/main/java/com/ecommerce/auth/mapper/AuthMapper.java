@@ -1,4 +1,4 @@
-package com.ecommerce.auth;
+package com.ecommerce.auth.mapper;
 
 import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.auth.security.CustomUserDetails;
