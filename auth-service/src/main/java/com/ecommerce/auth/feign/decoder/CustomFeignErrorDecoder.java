@@ -1,4 +1,4 @@
-package com.ecommerce.auth.decoder;
+package com.ecommerce.auth.feign.decoder;
 
 import com.ecommerce.commonexception.exception.ResourceAccessDeniedException;
 import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
