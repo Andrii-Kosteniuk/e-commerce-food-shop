@@ -65,8 +65,9 @@ public class ItemController {
         return ResponseEntity.ok(itemMapper.toItemResponse(item));
     }
 
-    @GetMapping("/category/{name}")
-    public ResponseEntity<List<ItemResponse>> getItemsByCategory(@PathVariable("name") Category category) {
+    @GetMapping("/category/search")
+    public ResponseEntity<List<ItemResponse>> getItemsByCategory(@RequestParam Category category) {
+
         List<ItemResponse> itemResponses = itemService.getItemsByCategoryName(category)
                 .stream()
                 .map(itemMapper::toItemResponse)
