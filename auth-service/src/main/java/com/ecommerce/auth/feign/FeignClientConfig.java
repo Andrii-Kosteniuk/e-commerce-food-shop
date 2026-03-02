@@ -1,6 +1,6 @@
 package com.ecommerce.auth.feign;
 
-import com.ecommerce.auth.decoder.CustomFeignErrorDecoder;
+import com.ecommerce.auth.feign.decoder.CustomFeignErrorDecoder;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 
