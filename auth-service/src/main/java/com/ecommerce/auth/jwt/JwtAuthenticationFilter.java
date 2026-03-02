@@ -24,61 +24,66 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
-    private final UserDetailsService userDetailsService;
-
 
     @Override
-    protected void doFilterInternal( HttpServletRequest request,
+    protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        if (! hasAuthorizationBearer(request)) {
-            filterChain.doFilter(request, response);
-            return;
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        try {
+            if (!hasAuthorizationBearer(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String token = getAccessToken(request);
+
+            if (!jwtUtils.validateToken(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            String username = jwtUtils.getSubjectFromToken(token);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                var authorities = jwtUtils.getRolesFromToken(token).stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                authorities
+                        );
+
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            }
+
+        } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
         }
 
-        String accessToken = getAccessToken(request);
-        if (jwtUtils.validateToken(accessToken)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        setAuthenticationContext(accessToken, request);
-        log.info("Setting authentication context for user: {}", jwtUtils.getSubjectFromToken(accessToken));
         filterChain.doFilter(request, response);
     }
 
     private boolean hasAuthorizationBearer(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        log.info("Authorization header: {}", authorizationHeader);
-        return ! ObjectUtils.isEmpty(authorizationHeader) && authorizationHeader.startsWith("Bearer");
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        return header != null && header.startsWith("Bearer ");
     }
 
     public String getAccessToken(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        return authorizationHeader.substring(7);
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        return header.substring(7);
     }
-
-    private void setAuthenticationContext(String token, HttpServletRequest request) {
-        String username = jwtUtils.getSubjectFromToken(token);
-        log.info("Extracted username from token: {}", username);
-        List<GrantedAuthority> authorities = jwtUtils.getRolesFromToken(token).stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
-        log.info("Extracted authorities from token: {}", authorities);
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        log.info("Extracted user details from token: {}", userDetails);
-
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-
-        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        log.info("Set authentication context for user: {}", username);
-    }
-
 }
