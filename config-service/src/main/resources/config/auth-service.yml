@@ -4,36 +4,14 @@ server:
 spring:
   application:
     name: auth-service
+
   datasource:
     url: jdbc:postgresql://localhost:5432/auth_service
     username: postgres
     password: ${USER_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    open-in-view: false
-  cloud:
-    discovery:
-      enabled: true
+  discovery:
+    enabled: true
 
-  main:
-    allow-bean-definition-overriding: true
-eureka:
-  instance:
-    hostname: localhost
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 3_600_000 # 1 hour
-  refresh-token: 86_400_000 # 24 hours
 
