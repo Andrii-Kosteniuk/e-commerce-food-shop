@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>common-exception</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>common-exception</name>
     <description>Module common-exception is used for handling exception</description>
 

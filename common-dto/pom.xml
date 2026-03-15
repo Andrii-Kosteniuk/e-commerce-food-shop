@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>common-dto</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>common-dto</name>
     <description>common-dto</description>
 
@@ -18,10 +17,6 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>jakarta.validation</groupId>
@@ -34,14 +29,4 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

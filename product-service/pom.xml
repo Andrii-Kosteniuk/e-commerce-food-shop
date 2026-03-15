@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>product-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>product-service</name>
     <description>Product Service for E-commerce Project</description>
 

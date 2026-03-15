@@ -97,16 +97,16 @@ if (! $distributionUrlNameMain -or ($distributionUrlName -eq $distributionUrlNam
 
 # prepare tmp dir
 $TMP_DOWNLOAD_DIR_HOLDER = New-TemporaryFile
-$TMP_DOWNLOAD_DIR = New-Item -Itemtype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
+$TMP_DOWNLOAD_DIR = New-Product -Producttype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
 $TMP_DOWNLOAD_DIR_HOLDER.Delete() | Out-Null
 trap {
   if ($TMP_DOWNLOAD_DIR.Exists) {
-    try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+    try { Remove-Product $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
     catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
   }
 }
 
-New-Item -Itemtype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
+New-Product -Producttype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
 
 # Download and Install Apache Maven
 Write-Verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
@@ -134,15 +134,15 @@ if ($distributionSha256Sum) {
 
 # unzip and move
 Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
-Rename-Item -Path "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" -NewName $MAVEN_HOME_NAME | Out-Null
+Rename-Product -Path "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" -NewName $MAVEN_HOME_NAME | Out-Null
 try {
-  Move-Item -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
+  Move-Product -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
 } catch {
   if (! (Test-Path -Path "$MAVEN_HOME" -PathType Container)) {
     Write-Error "fail to move MAVEN_HOME"
   }
 } finally {
-  try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+  try { Remove-Product $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
   catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
 }
 
