@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record ItemCreateRequest(
+public record ProductUpdateRequest(
         @NotBlank(message = "Name is required")
         String name,
 
@@ -14,17 +14,13 @@ public record ItemCreateRequest(
         @Positive(message = "Price must be positive")
         BigDecimal price,
 
-        @NotNull(message = "Quantity is required")
-        @Positive(message = "Quantity must be positive")
-        Integer quantity,
-
         @NotNull(message = "Category is required")
         String category,
 
-        @NotBlank(message = "Image URL is required")
-        String imageUrl,
+        @Positive(message = "Quantity must be positive")
+        int quantity,
 
-        @NotNull(message = "Define if this item is available")
-        boolean isAvailable
+        @NotBlank(message = "Image URL is required")
+        String imageUrl
 ) {
 }
