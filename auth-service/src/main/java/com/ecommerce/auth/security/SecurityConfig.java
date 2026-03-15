@@ -1,7 +1,6 @@
 package com.ecommerce.auth.security;
 
 import com.ecommerce.commondto.user.UserResponse;
-import com.ecommerce.auth.mapper.AuthMapper;
 import com.ecommerce.auth.service.UserServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -22,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     private final UserServiceClient userServiceClient;
-    private final AuthMapper authMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -33,13 +31,14 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         return username -> {
             log.info("Calling user-service to retrieve user by email: {}", username);
-            UserResponse user = userServiceClient.getUserForLogin(username);
-            log.debug("User retrieved: {}", user);
-            if (user == null) {
-                throw new UsernameNotFoundException("User not found: " + username);
-            }
 
-            return authMapper.toUserDetails(user);
+            UserResponse response = userServiceClient.getUserByEmail(username);
+
+            return User.builder()
+                    .username(response.email())
+                    .password(response.password())
+                    .authorities(response.role())
+                    .build();
         };
     }
 

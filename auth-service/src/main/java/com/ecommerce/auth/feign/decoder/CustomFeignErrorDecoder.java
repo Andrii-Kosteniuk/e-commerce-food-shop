@@ -5,6 +5,7 @@ import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import org.springframework.security.authentication.BadCredentialsException;
 
 public class CustomFeignErrorDecoder implements ErrorDecoder {
 
@@ -15,9 +16,10 @@ public class CustomFeignErrorDecoder implements ErrorDecoder {
         int status = response.status();
 
         return switch (status) {
-            case 403 -> throw new ResourceAccessDeniedException("Access denied");
-            case 404 -> throw new ResourceNotFoundException("Resource not found");
-            case 409 -> throw new ResourceAlreadyExistsException("Resource already exists");
+            case 401 -> new BadCredentialsException("Bad credentials");
+            case 403 -> new ResourceAccessDeniedException("Access denied");
+            case 404 -> new ResourceNotFoundException("Resource not found");
+            case 409 -> new ResourceAlreadyExistsException("Resource already exists");
             default -> defaultDecoder.decode(methodKey, response);
         };
     }
