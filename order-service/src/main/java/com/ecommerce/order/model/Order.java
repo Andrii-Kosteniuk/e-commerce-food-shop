@@ -1,6 +1,6 @@
 package com.ecommerce.order.model;
 
-import com.ecommerce.commondto.product.ItemResponse;
+import com.ecommerce.commondto.product.ProductResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,8 +26,8 @@ public class Order {
     private Long userId;
 
     @ElementCollection
-    @CollectionTable(name = "items", joinColumns = @JoinColumn(name = "item_id"))
-    private List<ItemResponse> items;
+    @CollectionTable(name = "Products", joinColumns = @JoinColumn(name = "Product_id"))
+    private List<ProductResponse> Products;
 
     private BigDecimal totalPrice;
 

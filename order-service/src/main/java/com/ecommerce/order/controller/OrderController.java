@@ -4,7 +4,6 @@ import com.ecommerce.commondto.order.OrderResponse;
 import com.ecommerce.commondto.order.OrderRequest;
 import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.model.Order;
-import com.ecommerce.order.service.OrderItemService;
 import com.ecommerce.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
