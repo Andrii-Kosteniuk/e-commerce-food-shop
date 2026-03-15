@@ -29,6 +29,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
