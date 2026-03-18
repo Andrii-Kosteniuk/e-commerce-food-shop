@@ -1,33 +1,31 @@
 package com.ecommerce.order.model;
 
-import com.ecommerce.commondto.product.ProductResponse;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+@Builder
 @Entity
 @Table(name = "orders")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "order_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "user_id")
     private Long userId;
 
-    @ElementCollection
-    @CollectionTable(name = "Products", joinColumns = @JoinColumn(name = "Product_id"))
-    private List<ProductResponse> Products;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
 
     private BigDecimal totalPrice;
 
@@ -36,5 +34,4 @@ public class Order {
 
     private LocalDateTime orderCreateDate;
     private LocalDateTime orderUpdateDate;
-
 }
