@@ -2,14 +2,15 @@ package com.ecommerce.user.controller;
 
 import com.ecommerce.commondto.auth.RegisterRequest;
 import com.ecommerce.commondto.user.UserResponse;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.user.model.User;
 import com.ecommerce.user.model.UserMapper;
+import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
 
     @PostMapping("/create")
@@ -29,8 +31,14 @@ public class UserController {
 
 
     @GetMapping("/email")
-    public ResponseEntity<UserResponse> getUserForLogin(@Valid @RequestParam String email) {
+    public ResponseEntity<UserResponse> getUserByEmail(@Valid @RequestParam String email) {
         User user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(userMapper.userToUserResponse(user));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("User by ID '%d' not found", id)));
         return ResponseEntity.ok(userMapper.userToUserResponse(user));
     }
 
