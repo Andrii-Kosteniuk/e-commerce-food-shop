@@ -2,7 +2,6 @@ package com.ecommerce.user.service;
 
 import com.ecommerce.commondto.auth.RegisterRequest;
 import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
-import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 
 import com.ecommerce.user.model.Role;
 import com.ecommerce.user.model.User;
