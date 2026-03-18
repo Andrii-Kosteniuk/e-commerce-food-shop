@@ -1,24 +1,18 @@
 package com.ecommerce.commondto.order;
 
-import com.ecommerce.commondto.product.ItemResponse;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class OrderResponse {
-    private Long id;
-    private Long userId;
-    private List<ItemResponse> items;
-    private BigDecimal totalPrice;
-    private String status;
-    private LocalDateTime orderCreateDate;
-    private LocalDateTime orderUpdateDate;
+public record OrderResponse (
+        Long id,
+        Long userId,
+        List<OrderItemResponse> items,
+        BigDecimal totalPrice,
+        String status,
+        LocalDateTime orderCreateDate,
+        LocalDateTime orderUpdateDate
+) {
+
 
 }
