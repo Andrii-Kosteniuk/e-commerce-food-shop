@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>user-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>user-service</name>
     <description>User Service for E-commerce Project</description>
 
@@ -21,11 +20,6 @@
     </properties>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
