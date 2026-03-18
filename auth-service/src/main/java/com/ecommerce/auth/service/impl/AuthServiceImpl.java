@@ -2,7 +2,7 @@ package com.ecommerce.auth.service.impl;
 
 import com.ecommerce.auth.jwt.JwtService;
 import com.ecommerce.auth.service.AuthService;
-import com.ecommerce.auth.service.UserServiceClient;
+import com.ecommerce.auth.feign.UserServiceClient;
 import com.ecommerce.commondto.auth.AuthenticationRequest;
 import com.ecommerce.commondto.auth.AuthenticationResponse;
 import com.ecommerce.commondto.auth.RegisterRequest;
@@ -10,7 +10,6 @@ import com.ecommerce.commondto.user.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;

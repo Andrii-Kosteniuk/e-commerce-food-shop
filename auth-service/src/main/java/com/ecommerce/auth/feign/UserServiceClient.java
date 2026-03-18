@@ -1,8 +1,8 @@
-package com.ecommerce.auth.service;
+package com.ecommerce.auth.feign;
 
-import com.ecommerce.auth.feign.FeignClientConfig;
 import com.ecommerce.commondto.auth.RegisterRequest;
 import com.ecommerce.commondto.user.UserResponse;
+import com.study.feignclientconfig.feign.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 

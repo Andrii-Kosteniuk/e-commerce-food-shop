@@ -1,9 +1,12 @@
-package com.ecommerce.auth.feign;
+package com.study.feignclientconfig.feign;
 
-import com.ecommerce.auth.feign.decoder.CustomFeignErrorDecoder;
+
+import com.study.feignclientconfig.feign.decoder.CustomFeignErrorDecoder;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class FeignClientConfig {
 
     @Bean

@@ -1,6 +1,6 @@
 package com.ecommerce.auth;
 
-import com.ecommerce.auth.service.UserServiceClient;
+import com.ecommerce.auth.feign.UserServiceClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
