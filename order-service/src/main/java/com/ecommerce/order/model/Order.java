@@ -12,8 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter
-@Setter
-@NoArgsConstructor
+@Setter @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
 
@@ -23,9 +22,8 @@ public class Order {
 
     private Long userId;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<OrderItem> items = new ArrayList<>();
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items;
 
     private BigDecimal totalPrice;
 

@@ -9,15 +9,13 @@ import com.ecommerce.order.model.OrderStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
 
-
-    @Mapping(target = "status", source = "status")
     OrderResponse toOrderResponse(Order order);
-
     List<OrderItemResponse> toOrderItemResponses(List<OrderItem> items);
 }

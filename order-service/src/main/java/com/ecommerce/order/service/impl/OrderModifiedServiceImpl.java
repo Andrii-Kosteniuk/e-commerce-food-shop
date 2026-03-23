@@ -1,4 +1,4 @@
-package com.ecommerce.order.service;
+package com.ecommerce.order.service.impl;
 
 import com.ecommerce.commondto.order.OrderRequest;
 import com.ecommerce.commondto.order.OrderResponse;
@@ -10,6 +10,7 @@ import com.ecommerce.order.model.Order;
 import com.ecommerce.order.model.OrderItem;
 import com.ecommerce.order.model.OrderStatus;
 import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.order.service.OrderModifiedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService {
+public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     private final OrderRepository orderRepository;
     private final FeignUserClient userClient;
@@ -77,14 +78,5 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteOrder(Long id) {
 
-    }
-
-    @Transactional
-    public List<OrderResponse> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-
-        return orders.stream()
-                .map(orderMapper::toOrderResponse)
-                .toList();
     }
 }
