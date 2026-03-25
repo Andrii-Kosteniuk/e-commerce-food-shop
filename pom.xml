@@ -23,11 +23,13 @@
         <module>product-service</module>
         <module>order-service</module>
         <module>feign-client-config</module>
+        <module>kafka-service</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <spring.boot.version>3.4.5</spring.boot.version>
+        <spring-cloud.version>2024.0.1</spring-cloud.version>
         <spring.boot.maven.plugin.version>3.4.5</spring.boot.maven.plugin.version>
         <spring.boot.dependencies.version>3.4.5</spring.boot.dependencies.version>
     </properties>
