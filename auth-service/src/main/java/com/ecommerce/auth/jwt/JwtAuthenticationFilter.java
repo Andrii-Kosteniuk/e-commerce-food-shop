@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String accessToken = retrieveTokenFormHeader(request);
-        if (jwtService.validateToken(accessToken)) {
+        if (!jwtService.validateToken(accessToken)) {
             filterChain.doFilter(request, response);
             return;
         }

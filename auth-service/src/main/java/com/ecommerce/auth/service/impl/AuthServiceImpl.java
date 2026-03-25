@@ -12,7 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("Registering user in auth-service: {}", request.email());
         UserResponse user = userServiceClient.createUser(request);
 
-        String token = jwtService.generateAccessToken(user.email());
+        String token = jwtService.generateAccessToken(user.email(), user.role());
 
         return new AuthenticationResponse(token);
     }
@@ -47,7 +50,8 @@ public class AuthServiceImpl implements AuthService {
         );
 
         String email = authentication.getName();
-        var accessToken = jwtService.generateAccessToken(email);
+        Optional<? extends GrantedAuthority> grantedAuthority = authentication.getAuthorities().stream().findAny();
+        var accessToken = jwtService.generateAccessToken(email, grantedAuthority.map(GrantedAuthority::getAuthority).orElse(null));
 
         log.info("User {} has been authenticated", email);
         return new AuthenticationResponse(accessToken);
