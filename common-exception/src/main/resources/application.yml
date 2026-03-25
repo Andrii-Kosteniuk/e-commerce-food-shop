@@ -1,6 +1,3 @@
 spring:
   application:
     name: common-exception
-
-server:
-  port: 9998
