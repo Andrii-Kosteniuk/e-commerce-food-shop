@@ -1,50 +1,48 @@
 package com.ecommerce.product.service.impl;
 
+import com.ecommerce.commondto.product.ProductResponse;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Product;
-import com.ecommerce.product.repository.CatalogRepository;
+import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.ProductCatalogService;
+import com.ecommerce.product.util.ProductMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProductCatalogServiceImpl implements ProductCatalogService {
 
-    public final CatalogRepository catalogRepository;
+    private final ProductRepository productRepository;
+    public final ProductMapper productMapper;
 
     @Override
     public Product getProductById(Long id) {
-        return catalogRepository.findById(id)
+        return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id %s not found", id)));
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        List<Product> products = catalogRepository.findAll();
-        if (products.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return products;
+    public Page<ProductResponse> getProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(productMapper::toProductResponse);
     }
 
     @Override
-    public Product getProductByName(String name) {
-        return catalogRepository.getProductByName(name)
+    public ProductResponse getProductByName(String name) {
+        return productRepository.getProductByName(name)
+                .map(productMapper::toProductResponse)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with name %s not found", name)));
     }
 
     @Override
     public List<Product> getProductsByCategoryName(Category category) {
-        return catalogRepository.getProductsByCategory(category);
+        return productRepository.getProductsByCategory(category);
     }
 
-    @Override
-    public List<Product> searchProducts(Category category) {
-        return catalogRepository.getProductsByCategory(category);
-    }
 }

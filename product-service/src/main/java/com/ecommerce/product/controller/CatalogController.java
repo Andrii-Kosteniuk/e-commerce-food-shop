@@ -6,6 +6,9 @@ import com.ecommerce.product.model.Product;
 import com.ecommerce.product.service.ProductCatalogService;
 import com.ecommerce.product.util.ProductMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,20 +22,17 @@ public class CatalogController {
     public final ProductCatalogService catalogService;
     public final ProductMapper productMapper;
 
-    @GetMapping
-    public ResponseEntity<List<ProductResponse>> retrieveAllProducts() {
-        List<ProductResponse> productResponses = catalogService.getAllProducts()
-                .stream()
-                .map(productMapper::toProductResponse)
-                .toList();
 
-        return ResponseEntity.ok(productResponses);
+    @GetMapping
+    public ResponseEntity<Page<ProductResponse>> retrieveAllProducts(@PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        Page<ProductResponse> productPageResponse = catalogService.getProducts(pageable);
+        return ResponseEntity.ok(productPageResponse);
     }
 
     @GetMapping("/name")
     public ResponseEntity<ProductResponse> retrieveProductByName(@RequestParam("name") String name) {
-        Product product = catalogService.getProductByName(name);
-        return ResponseEntity.ok(productMapper.toProductResponse(product));
+        ProductResponse product = catalogService.getProductByName(name);
+        return ResponseEntity.ok(product);
     }
 
     @GetMapping("/{id}")

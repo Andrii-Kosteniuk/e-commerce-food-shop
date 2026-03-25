@@ -2,8 +2,7 @@ package com.ecommerce.product.service.impl;
 
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.product.model.Product;
-import com.ecommerce.product.repository.InventoryRepository;
-import com.ecommerce.product.repository.ProductManagementRepository;
+import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class InventoryServiceImpl implements InventoryService {
 
-    private final ProductManagementRepository productManagementRepository;
+    private final ProductRepository productRepository;
     private final ProductCatalogServiceImpl productCatalogService;
 
 
@@ -31,7 +30,7 @@ public class InventoryServiceImpl implements InventoryService {
         if (product.getQuantity() == 0) {
             product.setAvailable(false);
         }
-        productManagementRepository.save(product);
+        productRepository.save(product);
 
     }
 
