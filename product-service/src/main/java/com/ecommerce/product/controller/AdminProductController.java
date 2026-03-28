@@ -4,7 +4,6 @@ import com.ecommerce.commondto.product.ProductCreateRequest;
 import com.ecommerce.commondto.product.ProductResponse;
 import com.ecommerce.commondto.product.ProductUpdateRequest;
 import com.ecommerce.product.service.ProductManagementService;
-import com.ecommerce.product.service.impl.ProductManagementServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

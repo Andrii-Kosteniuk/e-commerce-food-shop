@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderCatalogAServiceImpl implements OrderCatalogService {
+public class OrderCatalogServiceImpl implements OrderCatalogService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
