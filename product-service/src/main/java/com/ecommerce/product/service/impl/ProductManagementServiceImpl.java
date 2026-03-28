@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProductManagementServiceImpl implements ProductManagementService {
 
-    public final ProductRepository productRepository;
-    public final ProductMapper productMapper;
+    private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     @Override
     public ProductResponse createProduct(ProductCreateRequest productCreateRequest) {
@@ -50,9 +50,7 @@ public class ProductManagementServiceImpl implements ProductManagementService {
         existingProduct.setCategory(category);
         existingProduct.setImageUrl(productUpdateRequest.imageUrl());
         existingProduct.setQuantity(productUpdateRequest.quantity());
-        if (productUpdateRequest.quantity() > 1) {
-            existingProduct.setAvailable(true);
-        }
+
         productRepository.save(existingProduct);
 
     }
