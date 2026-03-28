@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface OrderModifiedService {
 
-    OrderResponse createOrder(Long id, OrderRequest request);
+    OrderResponse createOrder(String email, OrderRequest request);
     Order updateOrder(Long orderId, OrderRequest orderRequest);
     void deleteOrder(Long id);
 

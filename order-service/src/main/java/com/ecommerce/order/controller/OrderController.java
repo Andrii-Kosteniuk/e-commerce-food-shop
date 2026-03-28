@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,12 +33,12 @@ public class OrderController {
         return ResponseEntity.ok(allOrders);
     }
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<OrderResponse> createOrder(
-            @PathVariable  Long userId,
-            @Valid @RequestBody OrderRequest request) {
+    @PostMapping
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
 
-        var order = modifiedService.createOrder(userId, request);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        var order = modifiedService.createOrder(email, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }

@@ -33,9 +33,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
-    public OrderResponse createOrder(Long id, OrderRequest request) {
+    public OrderResponse createOrder(String email, OrderRequest request) {
 
-        UserResponse user = userClient.getUserById(id);
+        UserResponse user = userClient.getUserByEmail(email);
 
         List<OrderItem> items = request.products().stream()
                 .map(product -> {
