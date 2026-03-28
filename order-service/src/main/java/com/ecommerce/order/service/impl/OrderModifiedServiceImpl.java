@@ -1,10 +1,12 @@
 package com.ecommerce.order.service.impl;
 
+import com.ecommerce.commondto.kafka.OrderCreatedEvent;
 import com.ecommerce.commondto.order.OrderRequest;
 import com.ecommerce.commondto.order.OrderResponse;
 import com.ecommerce.commondto.user.UserResponse;
-import com.ecommerce.order.feign.FeignProductClient;
-import com.ecommerce.order.feign.FeignUserClient;
+import com.ecommerce.kafka.producers.KafkaEventPublisher;
+import com.ecommerce.order.feign.ProductFeignClient;
+import com.ecommerce.order.feign.UserFeignClient;
 import com.ecommerce.order.mapper.OrderMapper;
 import com.ecommerce.order.model.Order;
 import com.ecommerce.order.model.OrderItem;
@@ -14,7 +16,6 @@ import com.ecommerce.order.service.OrderModifiedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,9 +27,10 @@ import java.util.List;
 public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     private final OrderRepository orderRepository;
-    private final FeignUserClient userClient;
-    private final FeignProductClient productClient;
+    private final UserFeignClient userClient;
+    private final ProductFeignClient productClient;
     private final OrderMapper orderMapper;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
     public OrderResponse createOrder(Long id, OrderRequest request) {
@@ -43,6 +45,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                             .productId(productInfo.id())
                             .productName(productInfo.name())
                             .price(productInfo.price())
+                            .category(productInfo.category())
                             .quantity(product.quantity())
                             .build();
                 })
@@ -67,6 +70,15 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         items.forEach(item -> item.setOrder(order));
         orderRepository.save(order);
 
+        kafkaEventPublisher.publish(new OrderCreatedEvent(
+                order.getId(),
+                user.id(),
+                order.getTotalPrice(),
+                order.getStatus().name()
+        ));
+
+        log.info("Order created and event published for orderId: {}", order.getId());
+
         return orderMapper.toOrderResponse(order);
     }
 
@@ -77,6 +89,6 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     @Override
     public void deleteOrder(Long id) {
-
+        orderRepository.deleteById(id);
     }
 }
