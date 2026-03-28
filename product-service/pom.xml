@@ -13,12 +13,6 @@
     <name>product-service</name>
     <description>Product Service for E-commerce Project</description>
 
-    <properties>
-        <java.version>17</java.version>
-        <spring.boot.version>3.2.4</spring.boot.version>
-        <spring-cloud.version>2024.0.1</spring-cloud.version>
-    </properties>
-
     <dependencies>
 
         <dependency>
@@ -101,6 +95,12 @@
         <dependency>
             <groupId>com.ecommerce</groupId>
             <artifactId>common-exception</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ecommerce</groupId>
+            <artifactId>common-gateway-security</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

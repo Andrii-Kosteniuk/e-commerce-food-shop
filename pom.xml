@@ -18,12 +18,14 @@
         <module>api-gateway</module>
         <module>common-dto</module>
         <module>common-exception</module>
+        <module>common-gateway-security</module>
         <module>auth-service</module>
         <module>user-service</module>
         <module>product-service</module>
         <module>order-service</module>
         <module>feign-client-config</module>
         <module>kafka-service</module>
+        <module>notification-service</module>
     </modules>
 
     <properties>
