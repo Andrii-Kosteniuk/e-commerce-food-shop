@@ -42,18 +42,19 @@ public class AuthServiceImpl implements AuthService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
         log.info("Authenticating user...");
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()
                 )
         );
 
-        String email = authentication.getName();
-        Optional<? extends GrantedAuthority> grantedAuthority = authentication.getAuthorities().stream().findAny();
-        var accessToken = jwtService.generateAccessToken(email, grantedAuthority.map(GrantedAuthority::getAuthority).orElse(null));
+        UserResponse user = userServiceClient.getUserByEmail(request.email());
+        String token = jwtService.generateAccessToken(user.email(), user.role());
 
-        log.info("User {} has been authenticated", email);
-        return new AuthenticationResponse(accessToken);
+        log.info("User '{}' has been authenticated", user.email());
+
+        return new AuthenticationResponse(token);
+
     }
 }
