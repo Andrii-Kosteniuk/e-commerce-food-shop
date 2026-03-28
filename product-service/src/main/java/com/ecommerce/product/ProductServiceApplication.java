@@ -6,7 +6,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
-@SpringBootApplication(scanBasePackages = {"com.ecommerce.product", "com.ecommerce.auth","com.ecommerce.commonexception", "com.ecommerce.commondto"})
+@SpringBootApplication(scanBasePackages = {"com.ecommerce.product", "com.ecommerce.auth","com.ecommerce.commonexception", "com.ecommerce.commondto","com.ecommerce.gatewaysecurity", "com.ecommerce.kafka"})
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class ProductServiceApplication {
 
