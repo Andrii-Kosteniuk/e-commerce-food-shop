@@ -27,7 +27,7 @@ public class UserServiceConfig {
                         .requestMatchers(
                                 "/api/v1/internal/**",
                                 "/api/v1/auth/**").permitAll()
-                        .anyRequest().denyAll())
+                        .anyRequest().authenticated())
                 .build();
     }
 
