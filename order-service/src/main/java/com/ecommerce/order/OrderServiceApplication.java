@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication(scanBasePackages = {"com.ecommerce.order", "com.ecommerce.commonexception", "com.ecommerce.commondto", "com.ecommerce.kafka","com.ecommerce.gatewaysecurity"})
+@SpringBootApplication(scanBasePackages = {"com.ecommerce.order","com.ecommerce.commonexception", "com.ecommerce.commondto", "com.ecommerce.kafka", "com.ecommerce.security"})
 @EnableFeignClients
 public class OrderServiceApplication {
 
