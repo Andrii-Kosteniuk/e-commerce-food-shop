@@ -2,8 +2,7 @@ package com.ecommerce.order.feign;
 
 
 import com.ecommerce.commondto.user.UserResponse;
-import com.study.feignclientconfig.feign.FeignClientConfig;
-import jakarta.validation.Valid;
+import com.ecommerce.feignconfig.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
