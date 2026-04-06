@@ -2,7 +2,7 @@ package com.ecommerce.commondto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
         @NotBlank(message = "First name is required")
@@ -16,6 +16,7 @@ public record RegisterRequest(
         String email,
 
         @NotBlank(message = "Password is required")
+        @Size(min = 4, max = 12, message = "Password must be between 6 and 12 characters")
         String password
 ) {
 }
