@@ -1,9 +1,7 @@
 package com.ecommerce.auth.controller;
 
 import com.ecommerce.auth.service.AuthService;
-import com.ecommerce.commondto.auth.AuthenticationRequest;
-import com.ecommerce.commondto.auth.AuthenticationResponse;
-import com.ecommerce.commondto.auth.RegisterRequest;
+import com.ecommerce.commondto.auth.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,5 +24,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody  AuthenticationRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthenticationResponse> refresh(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return ResponseEntity.ok(authService.refreshToken(refreshTokenRequest));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody LogOutRequest request) {
+        authService.logout(request);
+        return ResponseEntity.noContent().build();
     }
 }
