@@ -1,0 +1,50 @@
+package com.ecommerce.order.kafka;
+
+import com.ecommerce.commondto.kafka.*;
+import com.ecommerce.kafka.config.KafkaTopics;
+import com.ecommerce.order.model.OrderStatus;
+import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.order.service.OrderModifiedService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class OrderEventConsumer {
+
+    private final OrderModifiedService orderModifiedService;
+    private final OrderRepository orderRepository;
+
+
+    @KafkaListener(
+            topics = KafkaTopics.PAYMENT_SUCCEEDED,
+            groupId = "order-group"
+    )
+    public void handlePaymentSucceeded(PaymentSucceededEvent event) {
+        log.info("Received PaymentSucceededEvent for order: {}", event.orderId());
+
+        if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.PAID)) {
+            log.warn("Order {} already processed ", event.orderId());
+            return;
+        }
+
+
+        orderModifiedService.updateOrderStatus(event.orderId(), OrderStatus.PAID);
+        log.info("Order {} marked as paid", event.orderId());
+    }
+
+
+    @KafkaListener(
+            topics = KafkaTopics.PAYMENT_FAILED,
+            groupId = "order-group"
+    )
+    public void handlePaymentFailed(PaymentFailedEvent event) {
+        log.info("Payment failed for orderId: {}, reason: {}",
+                event.orderId(), event.reason());
+        orderModifiedService.updateOrderStatus(event.orderId(), OrderStatus.CANCELLED);
+    }
+
+}
