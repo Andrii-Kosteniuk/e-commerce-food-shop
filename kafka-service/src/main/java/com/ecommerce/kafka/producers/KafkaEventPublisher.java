@@ -1,7 +1,8 @@
 package com.ecommerce.kafka.producers;
 
-import com.ecommerce.commondto.kafka.OrderCreatedEvent;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -9,11 +10,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaEventPublisher {
 
-    private final KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private final static String TOPIC = "order-created";
-
-    public void publish(OrderCreatedEvent event) {
-        kafkaTemplate.send(TOPIC, String.valueOf(event.orderId()), event);
+    public void publish(String topic, Object event) {
+        kafkaTemplate.send(topic, event);
     }
+
 }
