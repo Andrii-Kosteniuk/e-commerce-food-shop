@@ -19,6 +19,7 @@
         <module>common-dto</module>
         <module>common-exception</module>
         <module>common-gateway-security</module>
+        <module>common-security</module>
         <module>auth-service</module>
         <module>user-service</module>
         <module>product-service</module>
