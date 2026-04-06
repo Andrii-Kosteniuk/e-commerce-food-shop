@@ -4,7 +4,7 @@ import com.ecommerce.commondto.product.ProductResponse;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Product;
 import com.ecommerce.product.service.ProductCatalogService;
-import com.ecommerce.product.util.ProductMapper;
+import com.ecommerce.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,7 @@ public class CatalogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponse> retrieveProductById(@PathVariable("id") Long id) {
+    public ResponseEntity<ProductResponse> retrieveProductById(@PathVariable Long id) {
         Product product = catalogService.getProductById(id);
         return ResponseEntity.ok(productMapper.toProductResponse(product));
     }

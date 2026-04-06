@@ -4,18 +4,18 @@ import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.product.model.Product;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.InventoryService;
+import com.ecommerce.product.service.ProductCatalogService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InventoryServiceImpl implements InventoryService {
 
     private final ProductRepository productRepository;
-    private final ProductCatalogServiceImpl productCatalogService;
-
+    private final ProductCatalogService productCatalogService;
 
     @Override
     public void decreaseStock(long productId, int quantity) {
@@ -26,7 +26,6 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         product.setQuantity(product.getQuantity() - quantity);
-        product.setUpdatedAt(LocalDateTime.now());
         if (product.getQuantity() == 0) {
             product.setAvailable(false);
         }
@@ -35,7 +34,16 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public void increaseStock(long productId, int quantity) {
+    public void increaseStock(long productId, int  quantity) {
+        Product product = productCatalogService.getProductById(productId);
+
+        product.setQuantity(product.getQuantity() + quantity);
+        product.setAvailable(true);
+
+        productRepository.save(product);
+
+        log.info("Increased stock for product {} by {}, new quantity: {}",
+                productId, quantity, product.getQuantity());
 
     }
 }
