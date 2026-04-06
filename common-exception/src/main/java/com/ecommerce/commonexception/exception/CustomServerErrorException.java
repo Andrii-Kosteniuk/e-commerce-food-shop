@@ -3,9 +3,10 @@ package com.ecommerce.commonexception.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class ResourceAccessDeniedException extends RuntimeException {
-    public ResourceAccessDeniedException(String message) {
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class CustomServerErrorException extends RuntimeException {
+
+    public CustomServerErrorException(String message) {
         super(message);
     }
 }
