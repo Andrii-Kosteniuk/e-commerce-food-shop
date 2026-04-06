@@ -1,9 +1,4 @@
 spring:
-  datasource:
-    username: postgres
-    password: ${USER_PASSWORD}
-
-
   jpa:
     hibernate:
       ddl-auto: update
