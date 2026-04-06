@@ -1,5 +1,6 @@
-package com.ecommerce.auth.jwt;
+package com.ecommerce.user.jwt;
 
+import com.ecommerce.user.security.TokenBlocklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final TokenBlocklistService tokenBlocklistService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -38,6 +40,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String accessToken = retrieveTokenFormHeader(request);
+
+        if (tokenBlocklistService.isRevoked(accessToken)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked");
+            return;
+        }
+
         if (!jwtService.validateToken(accessToken)) {
             filterChain.doFilter(request, response);
             return;
@@ -63,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         List<GrantedAuthority> authorities = jwtService.getRolesFromToken(token).stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
-        log.info("Extracted authorities from token: {}", authorities);
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(username, null, authorities);

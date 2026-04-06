@@ -1,4 +1,4 @@
-package com.ecommerce.gateway.security;
+package com.ecommerce.gatewaysecurity.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -14,9 +14,9 @@ import javax.crypto.SecretKey;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private String jwtSecret;
+    private String JWT_SECRET;
 
-    public boolean validateToken(String token) {
+    public boolean isValidToken(String token) {
         try {
             Jwts.parser()
                     .verifyWith(getSigningKey())
@@ -28,17 +28,29 @@ public class JwtUtil {
         }
     }
 
-    public Claims extractClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
+    public String extractEmail(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("userId", Long.class);
+    }
+
 
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
