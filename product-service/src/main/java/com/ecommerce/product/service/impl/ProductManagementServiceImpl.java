@@ -9,8 +9,9 @@ import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Product;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.ProductManagementService;
-import com.ecommerce.product.util.ProductMapper;
+import com.ecommerce.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +22,7 @@ public class ProductManagementServiceImpl implements ProductManagementService {
     private final ProductMapper productMapper;
 
     @Override
+    @CacheEvict(value = "products", allEntries = true )
     public ProductResponse createProduct(ProductCreateRequest productCreateRequest) {
         productRepository.getProductByName(productCreateRequest.name()).ifPresent(product -> {
             throw new ResourceAlreadyExistsException(String.format("Product with name '%s' already exists", product.getName()));
@@ -40,8 +42,10 @@ public class ProductManagementServiceImpl implements ProductManagementService {
     }
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public void updateProduct(Long id, ProductUpdateRequest productUpdateRequest) {
-        Product existingProduct = getProductById(id);
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id %s not found", id)));
 
         Category category = Category.from(productUpdateRequest.category());
 
@@ -56,16 +60,9 @@ public class ProductManagementServiceImpl implements ProductManagementService {
     }
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
-        getProductById(id);
-        productRepository.deleteById(id);
+       productRepository.deleteById(id);
     }
-
-
-    private Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id '%d' is not found", id)));
-    }
-
 
 }

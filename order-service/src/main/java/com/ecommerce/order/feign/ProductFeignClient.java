@@ -1,7 +1,7 @@
 package com.ecommerce.order.feign;
 
 import com.ecommerce.commondto.product.ProductResponse;
-import com.study.feignclientconfig.feign.FeignClientConfig;
+import com.ecommerce.feignconfig.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

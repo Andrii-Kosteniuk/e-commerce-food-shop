@@ -2,12 +2,14 @@ package com.ecommerce.product.service.impl;
 
 import com.ecommerce.commondto.product.ProductResponse;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.product.cache.RestPage;
 import com.ecommerce.product.model.Category;
 import com.ecommerce.product.model.Product;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.ProductCatalogService;
-import com.ecommerce.product.util.ProductMapper;
+import com.ecommerce.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,15 +24,17 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
     public final ProductMapper productMapper;
 
     @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id %s not found", id)));
-    }
-
-    @Override
+    @Cacheable(value = "products", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ProductResponse> getProducts(Pageable pageable) {
-        return productRepository.findAll(pageable)
+        Page<ProductResponse> page = productRepository.findAll(pageable)
                 .map(productMapper::toProductResponse);
+
+        return new RestPage<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements()
+        );
     }
 
     @Override
@@ -43,6 +47,12 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
     @Override
     public List<Product> getProductsByCategoryName(Category category) {
         return productRepository.getProductsByCategory(category);
+    }
+
+    @Cacheable(value = "products", key = "#id")
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id %s not found", id)));
     }
 
 }
