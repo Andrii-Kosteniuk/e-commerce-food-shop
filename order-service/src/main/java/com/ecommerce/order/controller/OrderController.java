@@ -1,9 +1,7 @@
 package com.ecommerce.order.controller;
 
 import com.ecommerce.commondto.order.OrderResponse;
-import com.ecommerce.commondto.order.OrderRequest;
-import com.ecommerce.order.mapper.OrderMapper;
-import com.ecommerce.order.model.Order;
+import com.ecommerce.commondto.order.OrderCreateRequest;
 import com.ecommerce.order.service.OrderCatalogService;
 import com.ecommerce.order.service.OrderModifiedService;
 import jakarta.validation.Valid;
@@ -16,25 +14,23 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderController {
 
-    private final OrderCatalogService catalogService;
     private final OrderModifiedService modifiedService;
-    private final OrderMapper orderMapper;
+    private final OrderCatalogService catalogService;
 
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
-
-        List<OrderResponse> allOrders = catalogService.getAllOrders();
-        return ResponseEntity.ok(allOrders);
+        return ResponseEntity.ok(catalogService.getAllOrders());
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -43,12 +39,14 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
-    @PutMapping("/update-order/{orderId}")
-    public ResponseEntity<OrderResponse> updateOrder(@PathVariable("orderId") Long orderId, @RequestBody OrderRequest request) {
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long orderId) {
 
-        Order order = modifiedService.updateOrder(orderId, request);
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
-        return ResponseEntity.ok(orderMapper.toOrderResponse(order));
+        return ResponseEntity.ok(modifiedService.cancelOrder(orderId, email));
     }
 
     @DeleteMapping("/delete-order/{id}")
