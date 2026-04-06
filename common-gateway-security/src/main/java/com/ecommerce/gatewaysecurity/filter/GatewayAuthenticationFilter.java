@@ -1,50 +1,96 @@
 package com.ecommerce.gatewaysecurity.filter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.ecommerce.gatewaysecurity.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.util.StringUtils;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GatewayAuthenticationFilter extends OncePerRequestFilter {
+public class GatewayAuthenticationFilter implements WebFilter {
+
+    private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, String> redisTemplate;
+    private static final List<String> PUBLIC_PATHS = List.of("/api/v1/auth/", "/api/v1/internal/users");
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
+        String path = request.getURI().getPath();
 
-        String email = request.getHeader("X-User-Email");
-        String role  = request.getHeader("X-User-Role");
-
-        if (email != null && role != null) {
-            List<GrantedAuthority> authorities =
-                    List.of(new SimpleGrantedAuthority(role));
-
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            email, null, authorities);
-
-            auth.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
-
+        if (isPublicPath(path) ) {
+            return chain.filter(exchange);
         }
 
-        filterChain.doFilter(request, response);
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+            return unauthorized(exchange);
+        }
+
+        String token = authHeader.substring(7);
+
+        if (!jwtUtil.isValidToken(token)) {
+            log.warn("Invalid JWT token received at gateway");
+            return unauthorized(exchange);
+        }
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey("blocklist:" + token))) {
+            log.warn("Token is blocklisted");
+            return unauthorized(exchange);
+        }
+
+        String email = jwtUtil.extractEmail(token);
+        String role = jwtUtil.extractRole(token);
+        Long userId = jwtUtil.extractUserId(token);
+
+        if (email == null || role == null) {
+            log.warn("Token missing required claims");
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, null, authorities);
+
+        ServerHttpRequest mutatedRequest = request.mutate()
+                        .header("X-User-Id", String.valueOf(userId))
+                        .header("X-User-Email", email)
+                        .header("X-User-Role", role)
+                        .build();
+
+        ServerWebExchange mutatedExchange = exchange.mutate()
+                .request(mutatedRequest)
+                .build();
+
+        log.info("Authenticated user: {}, role: {}", email, role);
+
+        return chain.filter(mutatedExchange)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+    }
+
+    private Mono<Void> unauthorized(ServerWebExchange exchange) {
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        return exchange.getResponse().setComplete();
+    }
+
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 }
