@@ -1,6 +1,10 @@
-package com.ecommerce.commonexception.exception;
+package com.ecommerce.commonexception.handler;
 
 import com.ecommerce.commonexception.dto.ErrorResponse;
+import com.ecommerce.commonexception.exception.AccessRestrictedException;
+import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ServerErrorException;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +27,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage() + " occurred. Check data you have provided", HttpStatus.UNAUTHORIZED, request.getRequestURI());
+        return buildErrorResponse(ex.getMessage() + ". Check data you have provided", HttpStatus.UNAUTHORIZED, request.getRequestURI());
+    }
+
+    @ExceptionHandler(ServerErrorException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(ServerErrorException ex, HttpServletRequest request) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -35,20 +45,27 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex, HttpServletRequest request) {
+        log.error(ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex, HttpServletRequest request) {
-        log.error("Exception occur with message : {}", ex.getMessage());
+        log.error(ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+        log.error(ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI());
     }
 
-    @ExceptionHandler(ResourceAccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleResourceAccessDeniedException(ResourceAccessDeniedException ex, HttpServletRequest request) {
-        log.error("Forbidden exception occur with message : {}", ex.getMessage());
+    @ExceptionHandler(AccessRestrictedException.class)
+    public ResponseEntity<ErrorResponse> handleResourceAccessDeniedException(AccessRestrictedException ex, HttpServletRequest request) {
+        log.error(ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request.getRequestURI());
     }
 
