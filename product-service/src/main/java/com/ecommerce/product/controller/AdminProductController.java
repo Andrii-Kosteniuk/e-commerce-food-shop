@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/admin/products")
 public class AdminProductController {
 
-    public final ProductManagementService productService;
+    private final ProductManagementService productService;
 
     @PostMapping("/create")
     public ResponseEntity<ProductResponse> createProduct(@RequestBody @Valid ProductCreateRequest request) {
