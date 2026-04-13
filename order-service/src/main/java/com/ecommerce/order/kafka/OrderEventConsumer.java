@@ -55,7 +55,7 @@ public class OrderEventConsumer {
     public void handleOrderConfirmed(OrderConfirmedEvent event) {
         try {
             orderModifiedService.updateOrderStatus(event.orderId(), OrderStatus.CONFIRMED);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             throw new KafkaEventException("Failed to confirm order", e);
         }
 
