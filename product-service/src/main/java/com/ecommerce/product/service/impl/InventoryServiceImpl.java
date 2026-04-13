@@ -7,6 +7,7 @@ import com.ecommerce.product.service.InventoryService;
 import com.ecommerce.product.service.ProductCatalogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +19,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final ProductCatalogService productCatalogService;
 
     @Override
+    @CacheEvict(value = "products", key = "#productId")
     public void decreaseStock(long productId, int quantity) {
         Product product = productCatalogService.getProductById(productId);
 
@@ -34,6 +36,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @CacheEvict(value = "products", key = "#productId")
     public void increaseStock(long productId, int  quantity) {
         Product product = productCatalogService.getProductById(productId);
 
