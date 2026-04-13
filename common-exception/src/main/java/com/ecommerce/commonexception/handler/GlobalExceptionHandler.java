@@ -2,6 +2,7 @@ package com.ecommerce.commonexception.handler;
 
 import com.ecommerce.commonexception.dto.ErrorResponse;
 import com.ecommerce.commonexception.exception.AccessRestrictedException;
+import com.ecommerce.commonexception.exception.KafkaEventException;
 import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import io.jsonwebtoken.JwtException;
@@ -47,6 +48,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex, HttpServletRequest request) {
+        log.error(ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    @ExceptionHandler(KafkaEventException.class)
+    public ResponseEntity<ErrorResponse> handleKafkaEventException(KafkaEventException ex, HttpServletRequest request) {
         log.error(ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
