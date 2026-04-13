@@ -52,6 +52,16 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                 .map(item -> {
                     var productInfo = productClient.getProductById(item.productId());
 
+                   request.products()
+                           .forEach(req -> {
+                               int productQuantity = productInfo.quantity();
+                               if (productQuantity < req.quantity() ) {
+                                   String productName = productInfo.name();
+
+                                   throw new IllegalArgumentException(String.format("Stock is exhausted. Product quantity is not available for product '%s'. There left %d units", productName, productQuantity));
+                               }
+                           });
+
                     return OrderItem.builder()
                             .productId(productInfo.id())
                             .productName(productInfo.name())
@@ -88,8 +98,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                 user.id(),
                 user.email(),
                 order.getTotalPrice(),
-                order.getStatus().name()
-        ));
+                order.getStatus().name(),
+                        orderMapper.toOrderResponse(order))
+        );
 
         log.info("Order created and event published for orderId: {}", order.getId());
 
@@ -109,9 +120,6 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
       order.setStatus(newStatus);
       order.setOrderUpdateDate(LocalDateTime.now());
       orderRepository.save(order);
-
-      log.info("Order {} status updated from {} to {}",
-                orderId, order.getStatus(), newStatus);
 
     }
 
@@ -157,6 +165,10 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     }
 
     private void validateStatusTransition(OrderStatus current, OrderStatus next) {
+        if (current == next) {
+            return;
+        }
+
         Map<OrderStatus, Set<OrderStatus>> allowed = Map.of(
                 OrderStatus.NEW,       Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
                 OrderStatus.CONFIRMED, Set.of(OrderStatus.PAID,   OrderStatus.CANCELLED),
@@ -168,5 +180,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                     "Cannot transition order status from %s to %s",
                     current, next));
         }
+
+        log.info("Order status updated from {} to {}",
+                current, next);
+
     }
 }
