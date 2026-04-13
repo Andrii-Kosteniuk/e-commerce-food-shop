@@ -1,6 +1,7 @@
 package com.ecommerce.order.kafka;
 
 import com.ecommerce.commondto.kafka.*;
+import com.ecommerce.commonexception.exception.KafkaEventException;
 import com.ecommerce.kafka.config.KafkaTopics;
 import com.ecommerce.order.model.OrderStatus;
 import com.ecommerce.order.repository.OrderRepository;
@@ -47,4 +48,16 @@ public class OrderEventConsumer {
         orderModifiedService.updateOrderStatus(event.orderId(), OrderStatus.CANCELLED);
     }
 
+    @KafkaListener(
+            topics = KafkaTopics.ORDER_CONFIRMED,
+            groupId = "order-group"
+    )
+    public void handleOrderConfirmed(OrderConfirmedEvent event) {
+        try {
+            orderModifiedService.updateOrderStatus(event.orderId(), OrderStatus.CONFIRMED);
+        } catch (IllegalArgumentException e) {
+            throw new KafkaEventException("Failed to confirm order", e);
+        }
+
+    }
 }
