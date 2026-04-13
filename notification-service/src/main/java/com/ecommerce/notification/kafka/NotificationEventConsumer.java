@@ -14,15 +14,17 @@ import org.springframework.stereotype.Service;
 public class NotificationEventConsumer {
 
     private final NotificationService notificationService;
+    private static final String CONFIRMATION_URL = "http://localhost:9091/api/v1/orders/confirm-order/";
 
         @KafkaListener(topics = KafkaTopics.ORDER_CREATED, groupId = "notification-group")
         public void handleOrderCreated(OrderCreatedEvent event) {
-            log.info("Sending order confirmation to userId: {}", event.userId());
+            log.info("Sending order created notification to userId: {}", event.userId());
 
                 notificationService.notifyOrderCreated(
                         event.userEmail(),
                         event.orderId(),
-                        event.totalPrice().toString()
+                        event.totalPrice().toString(),
+                        event.response().items(), CONFIRMATION_URL + event.orderId()
 
                 );
 
