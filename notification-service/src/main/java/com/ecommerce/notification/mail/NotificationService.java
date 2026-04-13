@@ -1,7 +1,12 @@
 package com.ecommerce.notification.mail;
 
+import com.ecommerce.commondto.order.OrderItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -10,7 +15,17 @@ public class NotificationService {
     private final EmailService emailService;
 
 
-    public void notifyOrderCreated(String email, Long orderId, String total) {
+    public void notifyOrderCreated(String email, Long orderId, String total, List<OrderItemResponse> items, String url) {
+        String products = items.stream()
+                .map(res -> {
+                    String name = res.productName();
+                    BigDecimal price = res.price();
+                    int quantity = res.quantity();
+                    return name + ": " + quantity + " x " + price.toString();
+                })
+                .collect(Collectors.joining("\n"));
+
+
         emailService.sendEmail(
                 email,
                 "Order #" + orderId + " received",
@@ -18,16 +33,30 @@ public class NotificationService {
                         Thank you for your order!
                         
                         Order ID:    #%d
+                        Status:      %s
+                        Products:    %s
                         Total:       %s
-                        Status:      NEW
-                        
-                        We are processing your payment.
-                        You will receive a confirmation once payment is complete.
                         
                         Thank you for shopping with Food Shop!
-                        """, orderId, total)
+                        """,orderId, "NEW", products, total +  "\n" +
+
+                "We would like you to confirm your order \n"  ) +
+                """ 
+                \n
+                If you agree and everything is fine please click the button below
+                """
+                +
+                // Suppose it is the button
+                url
+                + "\n" + "\n" +
+                """
+                We hope you enjoy your good !
+                Thank you for shopping with us.
+                """
         );
+
     }
+
     public void notifyPaymentSucceeded(String email, Long orderId, String total) {
         emailService.sendEmail(
                 email,
@@ -45,6 +74,7 @@ public class NotificationService {
     }
 
     public void notifyPaymentFailed(String email, Long orderId, String reason) {
+
         emailService.sendEmail(
                 email,
                 "Payment failed — Order #" + orderId,
@@ -60,35 +90,38 @@ public class NotificationService {
         );
     }
 
-    public void notifyOrderShipped(String email, Long orderId,
-                                   String estimatedDelivery) {
+
+    public void notifyConfirmationOrder(String email, Long orderId, List<OrderItemResponse> items, String url) {
+
+        String products = items.stream()
+                .map(res -> {
+                    String name = res.productName();
+                    BigDecimal price = res.price();
+                    return name + ":" + price.toString();
+                })
+                .collect(Collectors.joining("\n"));
+
+
+
         emailService.sendEmail(
                 email,
-                "Your order is on the way — Order #" + orderId,
+                "Order confirmation for order #" + orderId,
                 String.format("""
-                        Great news! Your order has been shipped.
-                        
-                        Order ID:            #%d
-                        Estimated delivery:  %s
-                        Status:              SHIPPED
-                        """, orderId, estimatedDelivery)
-        );
+                "Hello dear '%s'! " +
+                "We would like you to confirm your order \n""" + "\n" +
+                        products, email)
+                +
+                """ 
+                \n
+                If you agree and everything is fine please click the button below
+                """
+                +
+                // Suppose it is the button
+                url
+                + "\n" + "\n" +
+                """
+                We hope you enjoy your good !
+                Thank you for shopping with us.
+                """);
     }
-
-    public void notifyOrderDelivered(String email, Long orderId) {
-        emailService.sendEmail(
-                email,
-                "Order delivered — Order #" + orderId,
-                String.format("""
-                        Your order has been delivered!
-                        
-                        Order ID:    #%d
-                        Status:      DELIVERED
-                        
-                        We hope you enjoy your food!
-                        Thank you for shopping with Food Shop.
-                        """, orderId)
-        );
-    }
-
 }
