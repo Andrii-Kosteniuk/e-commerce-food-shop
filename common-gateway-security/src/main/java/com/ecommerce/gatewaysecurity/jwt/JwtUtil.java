@@ -47,6 +47,9 @@ public class JwtUtil {
         return extractAllClaims(token).get("userId", Long.class);
     }
 
+    public String extractTokenId(String token) {
+        return extractAllClaims(token).get("tokenId", String.class);
+    }
 
 
     private SecretKey getSigningKey() {
