@@ -1,5 +1,6 @@
 package com.ecommerce.user.security;
 
+import com.ecommerce.security.filter.InternalAuthenticationFilter;
 import com.ecommerce.user.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,16 +20,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class UserServiceSecurityConfig {
 
-    private final JwtAuthenticationFilter authenticationFilter;
+    private final InternalAuthenticationFilter internalAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(internalAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/internal/**").permitAll()
+                        .requestMatchers("/api/v1/internal/**").authenticated()
                         .anyRequest().authenticated())
                 .build();
     }
