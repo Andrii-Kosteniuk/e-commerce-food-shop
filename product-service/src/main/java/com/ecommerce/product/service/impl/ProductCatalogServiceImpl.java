@@ -24,7 +24,6 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
     public final ProductMapper productMapper;
 
     @Override
-    @Cacheable(value = "products", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ProductResponse> getProducts(Pageable pageable) {
         Page<ProductResponse> page = productRepository.findAll(pageable)
                 .map(productMapper::toProductResponse);
