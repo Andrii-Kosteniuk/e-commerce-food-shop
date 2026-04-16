@@ -12,6 +12,7 @@ import com.ecommerce.product.service.ProductManagementService;
 import com.ecommerce.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,7 +23,7 @@ public class ProductManagementServiceImpl implements ProductManagementService {
     private final ProductMapper productMapper;
 
     @Override
-    @CacheEvict(value = "products", allEntries = true )
+    @CachePut(value = "products" )
     public ProductResponse createProduct(ProductCreateRequest productCreateRequest) {
         productRepository.getProductByName(productCreateRequest.name()).ifPresent(product -> {
             throw new ResourceAlreadyExistsException(String.format("Product with name '%s' already exists", product.getName()));
