@@ -1,10 +1,7 @@
 package com.ecommerce.commonexception.handler;
 
 import com.ecommerce.commonexception.dto.ErrorResponse;
-import com.ecommerce.commonexception.exception.AccessRestrictedException;
-import com.ecommerce.commonexception.exception.KafkaEventException;
-import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
-import com.ecommerce.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.commonexception.exception.*;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -102,5 +99,12 @@ public class GlobalExceptionHandler {
                 message,
                 path);
         return new ResponseEntity<>(apiError, status);
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStock(
+            InsufficientStockException ex, HttpServletRequest request) {
+        log.warn(ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
     }
 }
