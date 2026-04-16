@@ -47,9 +47,12 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
 
-        String token = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
-        String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail(), user.getRole().name());
         userRepository.save(user);
+
+        UserResponse userResponse = getUserByEmail(request.email());
+
+        String token = jwtService.generateAccessToken(userResponse.id(), userResponse.email(), userResponse.role());
+        String refreshToken = jwtService.generateRefreshToken(userResponse.id(), userResponse.email(), userResponse.role());
 
         log.info("User '{}' has been registered", user.getEmail());
 
@@ -117,12 +120,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private void revokeIfValid(String accessToken) {
+        String tokenId;
         try {
             jwtService.validateToken(accessToken);
+
             long remaining = jwtService.extractClaims(accessToken)
                     .getExpiration().getTime() - System.currentTimeMillis();
             if (remaining > 0) {
-                tokenBlocklistService.revoke(accessToken, remaining);
+                tokenId = jwtService.extractClaims(accessToken).get("tokenId", String.class);
+                tokenBlocklistService.revoke(tokenId, remaining);
             }
         } catch (JwtException e) {
             log.warn("Attempted to revoke invalid token, skipping");
