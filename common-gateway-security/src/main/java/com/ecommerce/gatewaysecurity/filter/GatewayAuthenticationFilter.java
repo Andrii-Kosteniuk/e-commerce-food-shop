@@ -26,7 +26,7 @@ public class GatewayAuthenticationFilter implements WebFilter {
 
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
-    private static final List<String> PUBLIC_PATHS = List.of("/api/v1/auth/", "/api/v1/internal/users");
+    private static final List<String> PUBLIC_PATHS = List.of("/api/v1/auth/");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -49,8 +49,9 @@ public class GatewayAuthenticationFilter implements WebFilter {
             log.warn("Invalid JWT token received at gateway");
             return unauthorized(exchange);
         }
+        String tokenId = jwtUtil.extractTokenId(token);
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey("blocklist:" + token))) {
+        if (redisTemplate.hasKey("blocklist:" + tokenId)) {
             log.warn("Token is blocklisted");
             return unauthorized(exchange);
         }
