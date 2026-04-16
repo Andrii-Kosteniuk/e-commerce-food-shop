@@ -89,39 +89,4 @@ public class NotificationService {
                         """, orderId, reason)
         );
     }
-
-
-    public void notifyConfirmationOrder(String email, Long orderId, List<OrderItemResponse> items, String url) {
-
-        String products = items.stream()
-                .map(res -> {
-                    String name = res.productName();
-                    BigDecimal price = res.price();
-                    return name + ":" + price.toString();
-                })
-                .collect(Collectors.joining("\n"));
-
-
-
-        emailService.sendEmail(
-                email,
-                "Order confirmation for order #" + orderId,
-                String.format("""
-                "Hello dear '%s'! " +
-                "We would like you to confirm your order \n""" + "\n" +
-                        products, email)
-                +
-                """ 
-                \n
-                If you agree and everything is fine please click the button below
-                """
-                +
-                // Suppose it is the button
-                url
-                + "\n" + "\n" +
-                """
-                We hope you enjoy your good !
-                Thank you for shopping with us.
-                """);
-    }
 }
