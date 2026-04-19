@@ -1,81 +1,73 @@
 package com.ecommerce.feignconfig.decoder;
 
-import com.ecommerce.commonexception.exception.CustomServerErrorException;
-import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
-import org.springframework.security.authentication.BadCredentialsException;
-import com.ecommerce.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.commonexception.exception.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class CustomFeignErrorDecoder implements ErrorDecoder {
 
-    private final ErrorDecoder defaultDecoder = new Default();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Exception decode(String methodKey, Response response) {
-        int status = response.status();
-        String serviceError = extractErrorMessage(response, methodKey);
 
-        log.error("Feign error — method: {}, status: {}, message: {}",
-                methodKey, status, serviceError);
+        String responseBody = null;
 
-        return switch (status) {
-            case 401 -> new BadCredentialsException(serviceError);
-            case 403 -> new org.springframework.security.access.AccessDeniedException(serviceError);
-            case 404 -> new ResourceNotFoundException(serviceError);
-            case 409 -> new ResourceAlreadyExistsException(serviceError);
-            case 501 -> new CustomServerErrorException(serviceError);
-            default -> defaultDecoder.decode(methodKey, response);
-        };
-    }
-
-    private String extractErrorMessage(Response response, String methodKey) {
         try {
-            if (response.body() == null) {
-                return String.format("[%s] No response body", methodKey);
+            if (response.body() != null) {
+                responseBody = new String(
+                        response.body().asInputStream().readAllBytes(),
+                        StandardCharsets.UTF_8
+                );
             }
 
-            String body = new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            JsonNode json = objectMapper.readTree(body);
-
-            String message = extractMessage(json);
-
-            return String.format("[%s] %s", methodKey, message);
-
-        } catch (Exception e) {
-            return String.format("[%s] Could not read error response", methodKey);
+        } catch (IOException e) {
+            log.error("Failed to read Feign error response body", e);
         }
+
+        String extractedMessage = extractMessage(responseBody);
+
+        log.error(
+                "Feign error — method: {}, status: {}, body: {}",
+                methodKey,
+                response.status(),
+                responseBody
+        );
+
+        return new FeignClientException(
+                !extractedMessage.isBlank() ? extractedMessage : "Unknown Feign error");
     }
 
-    private String extractMessage(JsonNode json) {
+    private String extractMessage(String body) {
+        if (body == null || body.isBlank()) {
+            return "";
+        }
 
-        if (json.has("details")) {
-            String details = json.get("details").asText();
+        try {
+            JsonNode node = objectMapper.readTree(body);
 
-            if (details.startsWith("{")) {
-                try {
-                    JsonNode nested = objectMapper.readTree(details);
-                    if (nested.has("details")) {
-                        return nested.get("details").asText();
-                    }
-                } catch (Exception ignored) {
-                                    }
+            if (node.has("message")) {
+                return node.get("message").asText();
             }
 
-           return details;
+            if (node.has("error")) {
+                return node.get("error").asText();
+            }
+
+            if (node.has("details")) {
+                return node.get("details").asText();
+            }
+
+        } catch (Exception ignored) {
         }
 
-        if (json.has("message")) {
-            return json.get("message").asText();
-        }
-
-        return json.toString();
+        return body;
     }
 }
