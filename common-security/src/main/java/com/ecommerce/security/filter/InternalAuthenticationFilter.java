@@ -35,7 +35,9 @@ public class InternalAuthenticationFilter extends OncePerRequestFilter {
         String providedKey = request.getHeader(HEADER_INTERNAL_API_KEY);
 
         if (internalApiKey == null || !internalApiKey.equals(providedKey)) {
-            filterChain.doFilter(request, response);
+            log.warn("Rejected request — invalid or missing X-Internal-Api-Key from {}",
+                    request.getRemoteAddr());
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid internal token");
             return;
         }
 
@@ -43,7 +45,7 @@ public class InternalAuthenticationFilter extends OncePerRequestFilter {
         String email = request.getHeader(HEADER_USER_EMAIL);
         String role = request.getHeader(HEADER_USER_ROLE);
 
-        if (StringUtils.hasText(email) || StringUtils.hasText(role)) {
+        if (StringUtils.hasText(email) && StringUtils.hasText(role)) {
             List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(email, userId, authorities);
