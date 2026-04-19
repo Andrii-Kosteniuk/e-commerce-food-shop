@@ -41,13 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String accessToken = retrieveTokenFormHeader(request);
 
-        if (tokenBlocklistService.isRevoked(accessToken)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked");
+        if (!jwtService.validateToken(accessToken)) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        if (!jwtService.validateToken(accessToken)) {
-            filterChain.doFilter(request, response);
+        String tokenId = jwtService.extractClaims(accessToken).get("tokenId", String.class);
+        if (tokenBlocklistService.isRevoked(tokenId)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked");
             return;
         }
 
