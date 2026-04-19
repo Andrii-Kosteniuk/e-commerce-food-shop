@@ -83,8 +83,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthenticationResponse refreshToken(RefreshTokenRequest tokenRequest) {
-        jwtService.validateToken(tokenRequest.refreshToken());
-
         var claims = jwtService.extractClaims(tokenRequest.refreshToken());
         var type = claims.get("typ", String.class);
 
@@ -107,8 +105,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void logout(LogOutRequest request) {
-        revokeIfValid(request.token());
-        revokeIfValid(request.refreshToken());
+        revokeIfValid(request.token(), "access");
+        revokeIfValid(request.refreshToken(), "refresh");
     }
 
     @Override
@@ -119,19 +117,23 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    private void revokeIfValid(String accessToken) {
-        String tokenId;
+    private void revokeIfValid(String token, String expectedType) {
         try {
-            jwtService.validateToken(accessToken);
+            var extractedClaims = jwtService.extractClaims(token);
 
-            long remaining = jwtService.extractClaims(accessToken)
-                    .getExpiration().getTime() - System.currentTimeMillis();
+            var type = extractedClaims.get("typ", String.class);
+            if (!expectedType.equals(type)) {
+                throw new JwtException("Not a " + expectedType + " token");
+            }
+
+            long remaining = extractedClaims.getExpiration().getTime() - System.currentTimeMillis();
+
             if (remaining > 0) {
-                tokenId = jwtService.extractClaims(accessToken).get("tokenId", String.class);
+                String tokenId = extractedClaims.get("tokenId", String.class);
                 tokenBlocklistService.revoke(tokenId, remaining);
             }
         } catch (JwtException e) {
-            log.warn("Attempted to revoke invalid token, skipping");
+            log.warn("Attempted to revoke invalid token: {}", e.getMessage());
             throw e;
         }
     }
