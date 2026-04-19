@@ -27,7 +27,8 @@ public class GatewayAuthenticationFilter implements WebFilter {
 
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
-    private static final List<String> PUBLIC_PATHS = List.of("/api/v1/auth/");
+    private static final String PUBLIC_PATH = "/api/v1/auth/";
+    private static final String INTERNAL_PATH = "/api/v1/internal/";
 
     @Value("${security.internal-api-key}")
     private String internalApiKey;
@@ -37,7 +38,13 @@ public class GatewayAuthenticationFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        if (isPublicPath(path) ) {
+        if (path.startsWith(INTERNAL_PATH)) {
+            log.warn("Blocked external request to internal path: {}", path);
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+            return exchange.getResponse().setComplete();
+        }
+
+        if (path.startsWith(PUBLIC_PATH)) {
             return chain.filter(exchange);
         }
 
@@ -94,7 +101,4 @@ public class GatewayAuthenticationFilter implements WebFilter {
         return exchange.getResponse().setComplete();
     }
 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
-    }
 }
