@@ -35,15 +35,4 @@ spring:
             enable: false
 
 notification:
-  from-email: noreply@foodshop.com
-
-discovery:
-  enabled: true
-
-eureka:
-  client:
-    enabled: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+  from-email: noreply@-e-commerce-shop.com
