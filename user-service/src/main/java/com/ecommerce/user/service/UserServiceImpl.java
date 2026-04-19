@@ -4,6 +4,7 @@ import com.ecommerce.commondto.auth.*;
 import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
 
+import com.ecommerce.commonexception.exception.UnauthorizedException;
 import com.ecommerce.user.jwt.JwtService;
 import com.ecommerce.user.mapper.UserMapper;
 import com.ecommerce.user.model.Role;
@@ -14,7 +15,6 @@ import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .map(userMapper::userToUserResponse)
-                .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
     }
 
@@ -133,8 +133,7 @@ public class UserServiceImpl implements UserService {
                 tokenBlocklistService.revoke(tokenId, remaining);
             }
         } catch (JwtException e) {
-            log.warn("Attempted to revoke invalid token: {}", e.getMessage());
-            throw e;
+            log.warn("Token invalid or expired during logout, skipping revocation: {}", e.getMessage());
         }
     }
 }
