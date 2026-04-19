@@ -34,15 +34,18 @@ public class CustomFeignErrorDecoder implements ErrorDecoder {
 
         String extractedMessage = extractMessage(responseBody);
 
-        log.error(
-                "Feign error — method: {}, status: {}, body: {}",
-                methodKey,
-                response.status(),
-                responseBody
-        );
+        log.error("Error — method: {}, status: {}, body: {}", methodKey, response.status(), responseBody);
 
-        return new FeignClientException(
-                !extractedMessage.isBlank() ? extractedMessage : "Unknown Feign error");
+        return switch (response.status()) {
+            case 400 -> new IllegalArgumentException(extractedMessage);
+            case 401 -> new UnauthorizedException(extractedMessage);
+            case 403 -> new AccessRestrictedException(extractedMessage);
+            case 404 -> new ResourceNotFoundException(extractedMessage);
+            case 409 -> new ResourceAlreadyExistsException(extractedMessage);
+            case 500 -> new CustomServerErrorException(extractedMessage);
+            case 503 -> new ServiceUnavailableException(extractedMessage);
+            default -> new FeignClientException(!extractedMessage.isBlank() ? extractedMessage : "Unknown Feign error");
+        };
     }
 
     private String extractMessage(String body) {
