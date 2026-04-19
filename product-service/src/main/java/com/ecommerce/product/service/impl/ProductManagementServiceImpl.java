@@ -44,7 +44,7 @@ public class ProductManagementServiceImpl implements ProductManagementService {
 
     @Override
     @CacheEvict(value = "products", key = "#id")
-    public void updateProduct(Long id, ProductUpdateRequest productUpdateRequest) {
+    public ProductResponse updateProduct(Long id, ProductUpdateRequest productUpdateRequest) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id %s not found", id)));
 
@@ -58,6 +58,7 @@ public class ProductManagementServiceImpl implements ProductManagementService {
 
         productRepository.save(existingProduct);
 
+        return productMapper.toProductResponse(existingProduct);
     }
 
     @Override
