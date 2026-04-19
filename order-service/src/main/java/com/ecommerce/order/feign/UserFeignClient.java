@@ -18,7 +18,7 @@ import javax.naming.ServiceUnavailableException;
 public interface UserFeignClient {
 
     @GetMapping("/{id}")
-    UserResponse getUserById(@PathVariable Long id) throws ServiceUnavailableException;
+    UserResponse getUserById(@PathVariable Long id);
 
 
     @GetMapping("/email")
