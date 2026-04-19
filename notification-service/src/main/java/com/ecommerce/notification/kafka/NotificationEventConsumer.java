@@ -27,8 +27,6 @@ public class NotificationEventConsumer {
                         event.response().items(), CONFIRMATION_URL + event.orderId()
 
                 );
-
-            log.info("Message 'ORDER_CREATED' has been sent to user");
         }
 
         @KafkaListener(topics = KafkaTopics.PAYMENT_SUCCEEDED, groupId = "notification-group")
