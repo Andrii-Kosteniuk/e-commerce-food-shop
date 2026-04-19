@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -52,7 +53,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(KafkaEventException.class)
     public ResponseEntity<ErrorResponse> handleKafkaEventException(KafkaEventException ex, HttpServletRequest request) {
         log.error(ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -90,6 +91,20 @@ public class GlobalExceptionHandler {
 
         return buildErrorResponse(message, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailable(
+            ServiceUnavailableException ex, HttpServletRequest request) {
+        log.error("Downstream service unavailable: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request.getRequestURI());
+    }
+
+    @ExceptionHandler(FeignClientException.class)
+    public ResponseEntity<ErrorResponse> handleFeignClientException(
+            FeignClientException ex, HttpServletRequest request) {
+        log.error("Feign client error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE , request.getRequestURI());
+    }
+
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, String path) {
         ErrorResponse apiError = new ErrorResponse(
