@@ -20,6 +20,9 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+    loadbalancer:
+      retry:
+        enabled: false
 
 eureka:
   client:
