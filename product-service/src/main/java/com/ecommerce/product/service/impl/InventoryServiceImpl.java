@@ -2,15 +2,13 @@ package com.ecommerce.product.service.impl;
 
 import com.ecommerce.commonexception.exception.InsufficientStockException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.product.model.Product;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.InventoryService;
-import com.ecommerce.product.service.ProductCatalogService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 public class InventoryServiceImpl implements InventoryService {
 
     private final ProductRepository productRepository;
-    private final ProductCatalogService productCatalogService;
 
     @Override
     @Transactional
