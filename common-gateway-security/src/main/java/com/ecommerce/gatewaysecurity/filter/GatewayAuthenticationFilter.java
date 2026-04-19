@@ -3,6 +3,7 @@ package com.ecommerce.gatewaysecurity.filter;
 import com.ecommerce.gatewaysecurity.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ public class GatewayAuthenticationFilter implements WebFilter {
     private final RedisTemplate<String, String> redisTemplate;
     private static final List<String> PUBLIC_PATHS = List.of("/api/v1/auth/");
 
+    @Value("${security.internal-api-key}")
+    private String internalApiKey;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -40,30 +44,28 @@ public class GatewayAuthenticationFilter implements WebFilter {
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
-            return unauthorized(exchange);
+            return unauthorizeRequest(exchange);
         }
 
         String token = authHeader.substring(7);
 
         if (!jwtUtil.isValidToken(token)) {
             log.warn("Invalid JWT token received at gateway");
-            return unauthorized(exchange);
+            return unauthorizeRequest(exchange);
         }
         String tokenId = jwtUtil.extractTokenId(token);
+        Long userId = jwtUtil.extractUserId(token);
+        String email = jwtUtil.extractEmail(token);
+        String role = jwtUtil.extractRole(token);
 
         if (redisTemplate.hasKey("blocklist:" + tokenId)) {
             log.warn("Token is blocklisted");
-            return unauthorized(exchange);
+            return unauthorizeRequest(exchange);
         }
 
-        String email = jwtUtil.extractEmail(token);
-        String role = jwtUtil.extractRole(token);
-        Long userId = jwtUtil.extractUserId(token);
-
-        if (email == null || role == null) {
+        if (email == null || role == null || userId == null) {
             log.warn("Token missing required claims");
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return unauthorizeRequest(exchange);
         }
 
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
@@ -74,6 +76,7 @@ public class GatewayAuthenticationFilter implements WebFilter {
                         .header("X-User-Id", String.valueOf(userId))
                         .header("X-User-Email", email)
                         .header("X-User-Role", role)
+                        .header("X-Internal-Api-Key", internalApiKey)
                         .build();
 
         ServerWebExchange mutatedExchange = exchange.mutate()
@@ -86,7 +89,7 @@ public class GatewayAuthenticationFilter implements WebFilter {
                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
     }
 
-    private Mono<Void> unauthorized(ServerWebExchange exchange) {
+    private Mono<Void> unauthorizeRequest(ServerWebExchange exchange) {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         return exchange.getResponse().setComplete();
     }
