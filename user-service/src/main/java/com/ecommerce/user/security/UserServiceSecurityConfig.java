@@ -29,7 +29,10 @@ public class UserServiceSecurityConfig {
                 .addFilterBefore(internalAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/internal/**").authenticated()
+                        .requestMatchers(
+                                "/api/v1/internal/users/login",
+                                "/api/v1/internal/users/register",
+                                "/api/v1/internal/users/refresh-token").permitAll()
                         .anyRequest().authenticated())
                 .build();
     }
