@@ -25,34 +25,14 @@ public class NotificationService {
                 })
                 .collect(Collectors.joining("\n"));
 
+        String productsBlock = formatProducts(items);
+
+        String body = buildOrderCreatedEmail(orderId, total, productsBlock, url);
 
         emailService.sendEmail(
                 email,
-                "Order #" + orderId + " received",
-                String.format("""
-                        Thank you for your order!
-                        
-                        Order ID:    #%d
-                        Status:      %s
-                        Products:    %s
-                        Total:       %s
-                        
-                        Thank you for shopping with Food Shop!
-                        """,orderId, "NEW", products, total +  "\n" +
-
-                "We would like you to confirm your order \n"  ) +
-                """ 
-                \n
-                If you agree and everything is fine please click the button below
-                """
-                +
-                // Suppose it is the button
-                url
-                + "\n" + "\n" +
-                """
-                We hope you enjoy your good !
-                Thank you for shopping with us.
-                """
+                "Order #" + orderId + " — Confirmation Required",
+                body
         );
 
     }
@@ -89,4 +69,56 @@ public class NotificationService {
                         """, orderId, reason)
         );
     }
+
+    private String formatProducts(List<OrderItemResponse> items) {
+        return items.stream()
+                .map(item -> String.format(
+                        "- %-35s %d × %s",
+                        item.productName(),
+                        item.quantity(),
+                        item.price()
+                ))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String buildOrderCreatedEmail(
+            Long orderId,
+            String total,
+            String products,
+            String url
+    ) {
+        return String.format("""
+                Hello,
+                
+                Thank you for your order.
+                
+                Order Summary
+                ----------------------------------------
+                Order ID:   #%d
+                Status:     NEW
+                
+                Products:
+                %s
+                
+                ----------------------------------------
+                Total:      %s
+                ----------------------------------------
+                
+                To proceed with your order, please confirm it using the link below:
+                
+                Confirm your order:
+                %s
+                
+                If you did not place this order, you can ignore this email.
+                
+                Thank you,
+                Food Shop Team
+                """,
+                orderId,
+                products,
+                total,
+                url
+        );
+    }
+
 }
