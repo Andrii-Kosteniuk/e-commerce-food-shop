@@ -41,7 +41,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Order has been confirmed successfully!");
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
