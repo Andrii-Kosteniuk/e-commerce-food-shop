@@ -5,11 +5,15 @@ import com.ecommerce.feignconfig.decoder.CustomFeignErrorDecoder;
 import com.ecommerce.feignconfig.interceptor.FeignAuthInterceptor;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class FeignClientConfig {
+
+    @Value("${security.internal-api-key}")
+    private String internalApiKey;
 
     @Bean
     public ErrorDecoder errorDecoder() {
@@ -18,7 +22,7 @@ public class FeignClientConfig {
 
     @Bean
     public FeignAuthInterceptor feignAuthInterceptor() {
-        return new FeignAuthInterceptor();
+        return new FeignAuthInterceptor(internalApiKey);
     }
 
     @Bean
