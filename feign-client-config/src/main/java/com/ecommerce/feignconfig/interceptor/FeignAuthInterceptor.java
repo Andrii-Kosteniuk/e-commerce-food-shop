@@ -3,19 +3,23 @@ package com.ecommerce.feignconfig.interceptor;
 import com.ecommerce.security.filter.InternalAuthenticationFilter;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collection;
 
+@Slf4j
+@RequiredArgsConstructor
 public class FeignAuthInterceptor implements RequestInterceptor {
 
-    @Value("${security.internal-api-key}")
-    private String internalApiKey;
+    private final String internalApiKey;
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
+        requestTemplate.header(InternalAuthenticationFilter.HEADER_INTERNAL_API_KEY, internalApiKey);
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -35,6 +39,5 @@ public class FeignAuthInterceptor implements RequestInterceptor {
             requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_ROLE, role);
         }
 
-        requestTemplate.header(InternalAuthenticationFilter.HEADER_INTERNAL_API_KEY, internalApiKey);
     }
 }
