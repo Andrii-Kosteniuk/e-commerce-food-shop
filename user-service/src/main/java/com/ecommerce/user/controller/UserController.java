@@ -2,6 +2,10 @@ package com.ecommerce.user.controller;
 
 import com.ecommerce.commondto.auth.*;
 import com.ecommerce.commondto.user.UserResponse;
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.user.mapper.UserMapper;
+import com.ecommerce.user.model.User;
+import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
@@ -42,4 +48,11 @@ public class UserController {
         return userService.getUserByEmail(email);
     }
 
+
+    @GetMapping("/{id}")
+    UserResponse getUserById(@PathVariable Long id){
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return userMapper.userToUserResponse(user);
+    }
 }
