@@ -3,7 +3,7 @@ package com.ecommerce.order.controller;
 import com.ecommerce.commondto.kafka.OrderConfirmedEvent;
 import com.ecommerce.commondto.order.OrderResponse;
 import com.ecommerce.commondto.order.OrderCreateRequest;
-import com.ecommerce.kafka.config.KafkaTopics;
+import com.ecommerce.kafka.topic.KafkaTopics;
 import com.ecommerce.kafka.producers.KafkaEventPublisher;
 import com.ecommerce.order.service.OrderCatalogService;
 import com.ecommerce.order.service.OrderModifiedService;
@@ -51,14 +51,10 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
-    @PatchMapping("/{orderId}/cancel")
+    @PostMapping("/{orderId}/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long orderId) {
 
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
-        return ResponseEntity.ok(modifiedService.cancelOrder(orderId, email));
+        return ResponseEntity.ok(modifiedService.cancelOrder(orderId));
     }
 
     @DeleteMapping("/delete-order/{id}")

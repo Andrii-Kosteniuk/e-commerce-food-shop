@@ -8,7 +8,7 @@ public interface OrderModifiedService {
 
     OrderResponse createOrder(String email, OrderCreateRequest request);
     void updateOrderStatus(Long orderId, OrderStatus newStatus);
-    OrderResponse cancelOrder(Long orderId, String email);
+    OrderResponse cancelOrder(Long orderId);
     void deleteOrder(Long id);
 
 }

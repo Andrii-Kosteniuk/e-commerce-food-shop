@@ -1,12 +1,14 @@
 package com.ecommerce.order.service.impl;
 
+import com.ecommerce.commondto.kafka.OrderCanceledEvent;
 import com.ecommerce.commondto.kafka.OrderCreatedEvent;
 import com.ecommerce.commondto.order.OrderCreateRequest;
 import com.ecommerce.commondto.order.OrderResponse;
+import com.ecommerce.commondto.order.StockItem;
 import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.commonexception.exception.AccessRestrictedException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.kafka.config.KafkaTopics;
+import com.ecommerce.kafka.topic.KafkaTopics;
 import com.ecommerce.kafka.producers.KafkaEventPublisher;
 import com.ecommerce.order.feign.ProductFeignClient;
 import com.ecommerce.order.feign.UserFeignClient;
@@ -126,17 +128,10 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     @Override
     @Transactional
     @CacheEvict(value = "orders", key = "#orderId")
-    public OrderResponse cancelOrder(Long orderId, String email) {
+    public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Order with id '%d' not found", orderId)));
-
-        UserResponse user = userClient.getUserByEmail(email);
-
-        if (!order.getUserId().equals(user.id())) {
-            throw new AccessRestrictedException(
-                    "You are not allowed to cancel this order");
-        }
 
         validateStatusTransition(order.getStatus(), OrderStatus.CANCELLED);
 
@@ -144,7 +139,21 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         order.setOrderUpdateDate(LocalDateTime.now());
         orderRepository.save(order);
 
-        log.info("Order {} cancelled by user {}", orderId, email);
+        var items = order.getItems()
+                        .stream()
+                        .map(item -> new StockItem(item.getProductId(), item.getQuantity()))
+                        .toList();
+
+
+        kafkaEventPublisher.publish(
+                KafkaTopics.ORDER_CANCELED,
+                new OrderCanceledEvent(
+                        orderId,
+                        order.getUserId(),
+                        "Order has been canceled",
+                        items));
+
+        log.info("Order {} cancelled", orderId);
         return orderMapper.toOrderResponse(order);
     }
 
