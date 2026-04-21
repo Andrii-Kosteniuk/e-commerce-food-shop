@@ -1,14 +1,16 @@
 package com.ecommerce.product.kafka;
 
-import com.ecommerce.commondto.kafka.*;
 import com.ecommerce.commondto.order.OrderItemResponse;
 import com.ecommerce.commonexception.exception.InsufficientStockException;
 import com.ecommerce.commonexception.exception.KafkaEventException;
-import com.ecommerce.kafka.config.KafkaTopics;
+import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.commondto.kafka.OrderCanceledEvent;
+import com.ecommerce.commondto.kafka.OrderCreatedEvent;
 import com.ecommerce.kafka.producers.KafkaEventPublisher;
 import com.ecommerce.product.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -40,19 +42,34 @@ public class ProductEventConsumer {
 
     }
 
-    @KafkaListener(topics = KafkaTopics.STOCK_RELEASED, groupId = "product-group")
-    public void handleStockReleased(StockReleasedEvent event) {
-        log.info("Releasing stock for orderId: {}", event.orderId());
 
+    @KafkaListener(topics = KafkaTopics.ORDER_CANCELED, groupId = "order-group")
+    public void handleOrderCanceled(OrderCanceledEvent event) {
         try {
             event.items().forEach(item -> {
                 inventoryService.increaseStock(item.productId(), item.quantity());
                 log.info("Successfully released stock for product: {}", item.productId());
             });
-
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | ResourceNotFoundException e) {
             log.error("Failed to release stock for order ID: '{}'", event.orderId(), e);
-            throw new KafkaEventException("Failed to release stock for order ID: '" + event.orderId() + "'", e.getCause());
         }
+
     }
+
+
+//    @KafkaListener(topics = KafkaTopics.STOCK_RELEASED, groupId = "product-group")
+//    public void handleStockReleased(StockReleasedEvent event) {
+//        log.info("Releasing stock for orderId: {}", event.orderId());
+//
+//        try {
+//            event.items().forEach(item -> {
+//                inventoryService.increaseStock(item.productId(), item.quantity());
+//                log.info("Successfully released stock for product: {}", item.productId());
+//            });
+//
+//        } catch (Exception e) {
+//            log.error("Failed to release stock for order ID: '{}'", event.orderId(), e);
+//            throw new KafkaEventException("Failed to release stock for order ID: '" + event.orderId() + "'", e.getCause());
+//        }
+//    }
 }
