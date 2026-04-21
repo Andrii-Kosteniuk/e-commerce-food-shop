@@ -1,9 +1,13 @@
-package com.ecommerce.paymentservice;
+package com.ecommerce.payment;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+        "com.ecommerce.payment",
+        "com.ecommerce.kafka",
+        "com.ecommerce.security"
+})
 public class PaymentServiceApplication {
 
     public static void main(String[] args) {
