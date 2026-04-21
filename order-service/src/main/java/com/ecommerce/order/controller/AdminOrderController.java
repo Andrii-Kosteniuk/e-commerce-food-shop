@@ -11,14 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 @Slf4j
 public class AdminOrderController {
 
     private final OrderModifiedService modifiedService;
-
-
 
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<Void> updateOrderStatus(
