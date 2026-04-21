@@ -26,7 +26,9 @@ public class EmailService  {
             message.setSubject(subject);
             message.setText(body);
             mailSender.send(message);
-            log.info("Email was sent to user with email: {}", toEmail);
+
+            log.info("Message with subject '{}' has been sent to user", subject);
+
         } catch (Exception e) {
             log.error("Failed to send email to: {}, error: {}", toEmail, e.getMessage());
         }
