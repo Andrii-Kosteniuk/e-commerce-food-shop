@@ -1,10 +1,11 @@
 package com.ecommerce.notification.mail;
 
 import com.ecommerce.commondto.order.OrderItemResponse;
+import com.ecommerce.commondto.user.UserResponse;
+import com.ecommerce.notification.UserServiceFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,17 +14,10 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final EmailService emailService;
+    private final UserServiceFeignClient userServiceFeignClient;
 
 
     public void notifyOrderCreated(String email, Long orderId, String total, List<OrderItemResponse> items, String url) {
-        String products = items.stream()
-                .map(res -> {
-                    String name = res.productName();
-                    BigDecimal price = res.price();
-                    int quantity = res.quantity();
-                    return name + ": " + quantity + " x " + price.toString();
-                })
-                .collect(Collectors.joining("\n"));
 
         String productsBlock = formatProducts(items);
 
@@ -37,27 +31,47 @@ public class NotificationService {
 
     }
 
-    public void notifyPaymentSucceeded(String email, Long orderId, String total) {
+    public void notifyPaymentSucceeded(Long userId, Long orderId) {
+        UserResponse userById = userServiceFeignClient.getUserById(userId);
+
         emailService.sendEmail(
-                email,
+                userById.email(),
                 "Payment confirmed — Order #" + orderId,
+
                 String.format("""
                         Your payment has been confirmed!
                         
                         Order ID:    #%d
-                        Amount:      %s
                         Status:      CONFIRMED
                         
                         Your order is being prepared for delivery.
-                        """, orderId, total)
+                        """, orderId)
         );
     }
 
-    public void notifyPaymentFailed(String email, Long orderId, String reason) {
+    public void notifyOrderCanceled(Long userId, Long orderId) {
 
+        UserResponse userById = userServiceFeignClient.getUserById(userId);
         emailService.sendEmail(
-                email,
+                userById.email(),
+                "Order #" + orderId + " — Canceled",
+
+                String.format("""
+                        Your order has been canceled!
+                        
+                        Order ID:    #%d
+                        Status:      CANCELED
+                        
+                        """, orderId)
+        );
+    }
+
+    public void notifyPaymentFailed(Long userId, Long orderId, String reason) {
+        UserResponse userById = userServiceFeignClient.getUserById(userId);
+        emailService.sendEmail(
+                userById.email(),
                 "Payment failed — Order #" + orderId,
+
                 String.format("""
                         Unfortunately your payment could not be processed.
                         
@@ -81,12 +95,8 @@ public class NotificationService {
                 .collect(Collectors.joining("\n"));
     }
 
-    private String buildOrderCreatedEmail(
-            Long orderId,
-            String total,
-            String products,
-            String url
-    ) {
+    private String buildOrderCreatedEmail(Long orderId, String total, String products, String url) {
+
         return String.format("""
                 Hello,
                 
