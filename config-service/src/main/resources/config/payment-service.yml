@@ -1,0 +1,46 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: payment-service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: true
+    consumer:
+      group-id: payment-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.ecommerce.commondto.kafka"
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_service_db
+    username: postgres
+    password: ${USER_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      port: 6379
+      host: ${REDIS_HOST:localhost}
+      password: ${REDIS_PASSWORD}
+    cache:
+      type: redis
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+security:
+  internal-api-key: ${INTERNAL_API_KEY}
