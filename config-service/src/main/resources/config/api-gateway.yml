@@ -21,6 +21,11 @@ spring:
           predicates:
             - Path=/api/v1/orders/**, /api/v1/admin/orders/**
 
+        - id: payment-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/v1/payments/**
+
 eureka:
   client:
     service-url:
@@ -32,3 +37,13 @@ eureka:
 security:
   internal-api-key: ${INTERNAL_API_KEY}
 
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 50
+
+resilience4j.timelimiter:
+  configs:
+    default:
+      timeoutDuration: 5s
+      cancelRunningFuture: true
