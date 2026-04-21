@@ -42,6 +42,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, HttpServletRequest request) {
+        log.error(ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
     @ExceptionHandler(KafkaEventException.class)
     public ResponseEntity<ErrorResponse> handleKafkaEventException(KafkaEventException ex, HttpServletRequest request) {
         log.error(ex.getMessage());
@@ -70,6 +76,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
         log.error("IllegalArgument exception occur with message : {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    @ExceptionHandler(StripePaymentException.class)
+    public ResponseEntity<ErrorResponse> handleStripePaymentException(StripePaymentException ex, HttpServletRequest request) {
+        log.error("Stripe Payment Exception occur with message : {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.PAYMENT_REQUIRED, request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
