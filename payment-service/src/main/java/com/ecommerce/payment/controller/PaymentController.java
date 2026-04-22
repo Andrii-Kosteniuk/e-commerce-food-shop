@@ -28,11 +28,11 @@ public class PaymentController {
                 .body(paymentService.createPayment(request));
     }
 
-    @PostMapping("/{id}/confirm")
-    public ResponseEntity<PaymentResponse> confirmPayment (@PathVariable("id") Long paymentId) {
+    @PostMapping("/{paymentId}/confirm/{userId}")
+    public ResponseEntity<PaymentResponse> confirmPayment (@PathVariable Long paymentId, @PathVariable Long userId) {
 
         log.info("Confirming payment id={}", paymentId);
-        return ResponseEntity.ok(paymentService.confirmPayment(paymentId));
+        return ResponseEntity.ok(paymentService.confirmPayment(paymentId,userId));
     }
 
     @GetMapping("/order/{orderId}")
