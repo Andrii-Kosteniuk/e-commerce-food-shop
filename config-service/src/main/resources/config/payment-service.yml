@@ -12,13 +12,6 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: true
-    consumer:
-      group-id: payment-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.ecommerce.commondto.kafka"
 
   datasource:
     url: jdbc:postgresql://localhost:5432/payment_service_db
@@ -31,16 +24,19 @@ spring:
       port: 6379
       host: ${REDIS_HOST:localhost}
       password: ${REDIS_PASSWORD}
-    cache:
-      type: redis
+  cache:
+    type: redis
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
 
 security:
   internal-api-key: ${INTERNAL_API_KEY}
