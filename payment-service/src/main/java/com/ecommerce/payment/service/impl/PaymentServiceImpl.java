@@ -4,6 +4,7 @@ import com.ecommerce.commondto.kafka.PaymentFailedEvent;
 import com.ecommerce.commondto.kafka.PaymentSucceededEvent;
 import com.ecommerce.commondto.payment.PaymentRequest;
 import com.ecommerce.commondto.payment.PaymentResponse;
+import com.ecommerce.commonexception.exception.AccessRestrictedException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.commonexception.exception.StripePaymentException;
 import com.ecommerce.kafka.producers.PaymentEventPublisher;
@@ -37,9 +38,10 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse createPayment(PaymentRequest request) {
         Optional<Payment> paymentByIdempotencyKey = paymentRepository.findByIdempotencyKey(request.idempotencyKey());
 
-        if (paymentByIdempotencyKey.isPresent())
+        if (paymentByIdempotencyKey.isPresent()) {
+            log.debug("Payment with idempotency key '{}' already exists.", request.idempotencyKey());
             return paymentMapper.toPaymentResponse(paymentByIdempotencyKey.get());
-
+        }
 
 
         Payment payment = Payment.builder()
@@ -51,16 +53,26 @@ public class PaymentServiceImpl implements PaymentService {
                 .status(PaymentStatus.PENDING)
                 .build();
 
-        return paymentMapper.toPaymentResponse(paymentRepository.save(payment));
+        paymentRepository.save(payment);
+
+        log.info("Payment created successfully for orderId={}, userId={}",
+                request.orderId(), request.userId());
+
+        return paymentMapper.toPaymentResponse(payment);
     }
 
     @Override
     @Transactional
-    public PaymentResponse  confirmPayment(Long paymentId) {
+    public PaymentResponse  confirmPayment(Long paymentId, Long userId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId));
 
+        if (!payment.getUserId().equals(userId)){
+            throw new AccessRestrictedException("You are not authorized to confirm this payment");
+        }
+
         if (payment.getStatus() != PaymentStatus.PENDING) {
+            log.error("Payment is not in PENDING status: {}", payment.getStatus());
             throw new IllegalStateException("Payment is not in PENDING status: " + payment.getStatus());
         }
 
@@ -69,10 +81,9 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setStatus(PaymentStatus.COMPLETED);
             payment.setStripePaymentId(stripePaymentId);
 
-            log.info("Payment {} completed successfully. Stripe ID: {}", paymentId, stripePaymentId);
-
             paymentRepository.save(payment);
 
+            log.info("Payment {} completed successfully", paymentId);
             paymentEventPublisher.publishPaymentSucceeded(
                     new PaymentSucceededEvent(
                             paymentId,
