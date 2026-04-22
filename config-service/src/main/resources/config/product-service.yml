@@ -25,8 +25,8 @@ spring:
       port: 6379
       host: ${REDIS_HOST:localhost}
       password: ${REDIS_PASSWORD}
-    cache:
-      type: redis
+  cache:
+    type: redis
 
 eureka:
   client:
