@@ -8,5 +8,4 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
       properties:
-        spring.json.trusted.packages: "com.ecommerce.commondto.kafka"
         spring.json.add.type.headers: true
