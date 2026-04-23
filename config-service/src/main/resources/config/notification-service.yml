@@ -36,6 +36,7 @@ spring:
 
 notification:
   from-email: noreply@-e-commerce-shop.com
+  confirmation-base-url: ${GATEWAY_URL:http://localhost:9091}
 
 eureka:
   client:
