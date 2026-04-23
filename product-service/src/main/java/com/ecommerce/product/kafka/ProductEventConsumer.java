@@ -22,7 +22,6 @@ import java.util.List;
 public class ProductEventConsumer {
 
     private final InventoryService inventoryService;
-    private final KafkaEventPublisher kafkaEventPublisher;
 
     @KafkaListener(topics = KafkaTopics.ORDER_CREATED, groupId = "product-group")
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
@@ -43,7 +42,7 @@ public class ProductEventConsumer {
     }
 
 
-    @KafkaListener(topics = KafkaTopics.ORDER_CANCELED, groupId = "order-group")
+    @KafkaListener(topics = KafkaTopics.ORDER_CANCELED, groupId = "product-group")
     public void handleOrderCanceled(OrderCanceledEvent event) {
         try {
             event.items().forEach(item -> {
