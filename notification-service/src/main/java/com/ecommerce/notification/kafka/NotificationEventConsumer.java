@@ -8,6 +8,7 @@ import com.ecommerce.commondto.kafka.PaymentSucceededEvent;
 import com.ecommerce.notification.mail.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Component;
 public class NotificationEventConsumer {
 
     private final NotificationService notificationService;
-    private static final String CONFIRMATION_URL = "http://localhost:9091/api/v1/orders/confirm-order/";
+
+    @Value("${notification.confirmation-base-url}")
+    private String CONFIRMATION_URL;
 
     @KafkaListener(topics = KafkaTopics.ORDER_CREATED, groupId = "notification-group")
     public void handleOrderCreated(OrderCreatedEvent event) {
@@ -27,7 +30,7 @@ public class NotificationEventConsumer {
                 event.userEmail(),
                 event.orderId(),
                 event.totalPrice().toString(),
-                event.response().items(), CONFIRMATION_URL + event.orderId()
+                event.response().items(), CONFIRMATION_URL + "/api/v1/orders/confirm-order/" + event.orderId()
 
         );
     }

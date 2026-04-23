@@ -36,13 +36,13 @@ public class NotificationService {
 
         emailService.sendEmail(
                 userById.email(),
-                "Payment confirmed — Order #" + orderId,
+                "Payment completed — Order #" + orderId,
 
                 String.format("""
-                        Your payment has been confirmed!
+                        Your payment has been completed!
                         
                         Order ID:    #%d
-                        Status:      CONFIRMED
+                        Status:      COMPLETED
                         
                         Your order is being prepared for delivery.
                         """, orderId)
