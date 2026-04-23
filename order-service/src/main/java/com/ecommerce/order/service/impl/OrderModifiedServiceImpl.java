@@ -1,6 +1,7 @@
 package com.ecommerce.order.service.impl;
 
 import com.ecommerce.commondto.kafka.OrderCanceledEvent;
+import com.ecommerce.commondto.kafka.OrderConfirmedEvent;
 import com.ecommerce.commondto.kafka.OrderCreatedEvent;
 import com.ecommerce.commondto.order.OrderCreateRequest;
 import com.ecommerce.commondto.order.OrderResponse;
@@ -17,6 +18,7 @@ import com.ecommerce.order.model.Order;
 import com.ecommerce.order.model.OrderItem;
 import com.ecommerce.order.model.OrderStatus;
 import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.order.service.OrderCatalogService;
 import com.ecommerce.order.service.OrderModifiedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     private final OrderRepository orderRepository;
@@ -43,6 +46,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     private final ProductFeignClient productClient;
     private final OrderMapper orderMapper;
     private final KafkaEventPublisher kafkaEventPublisher;
+    private final OrderCatalogService orderCatalogService;
 
     @Override
     @Transactional
@@ -54,15 +58,11 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                 .map(item -> {
                     var productInfo = productClient.getProductById(item.productId());
 
-                   request.products()
-                           .forEach(req -> {
-                               int productQuantity = productInfo.quantity();
-                               if (productQuantity < req.quantity() ) {
-                                   String productName = productInfo.name();
-
-                                   throw new IllegalArgumentException(String.format("Stock is exhausted. Product quantity is not available for product '%s'. There left %d units", productName, productQuantity));
-                               }
-                           });
+                    if (productInfo.quantity() < item.quantity()) {
+                        log.warn("Insufficient stock for product: {}. Available: {}", item.productId(), productInfo.quantity());
+                        throw new IllegalArgumentException(String.format(
+                                "Insufficient stock for '%s'. Available: %d", productInfo.name(), productInfo.quantity()));
+                    }
 
                     return OrderItem.builder()
                             .productId(productInfo.id())
@@ -95,6 +95,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
         kafkaEventPublisher.publish(
                 KafkaTopics.ORDER_CREATED,
+                order.getId().toString(),
                 new OrderCreatedEvent(
                 order.getId(),
                 user.id(),
@@ -111,18 +112,16 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "orders", key = "#orderId")
     public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
 
-      Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Order with id '%d' not found", orderId)));
+        Order orderById = orderCatalogService.getOrderById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id '%d' not found", orderId)));
 
-      validateStatusTransition(order.getStatus(), newStatus);
-      order.setStatus(newStatus);
-      order.setOrderUpdateDate(LocalDateTime.now());
-      orderRepository.save(order);
+            if (validateStatusTransition(orderById.getStatus(), newStatus)) {
+                orderById.setStatus(newStatus);
+            }
 
+        log.info("Order status updated for orderId: {}", orderId);
     }
 
     @Override
@@ -133,10 +132,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Order with id '%d' not found", orderId)));
 
-        validateStatusTransition(order.getStatus(), OrderStatus.CANCELLED);
-
-        order.setStatus(OrderStatus.CANCELLED);
-        order.setOrderUpdateDate(LocalDateTime.now());
+        updateOrderStatus(orderId, OrderStatus.CANCELLED);
         orderRepository.save(order);
 
         var items = order.getItems()
@@ -147,6 +143,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
         kafkaEventPublisher.publish(
                 KafkaTopics.ORDER_CANCELED,
+                orderId.toString(),
                 new OrderCanceledEvent(
                         orderId,
                         order.getUserId(),
@@ -154,7 +151,28 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                         items));
 
         log.info("Order {} cancelled", orderId);
+
         return orderMapper.toOrderResponse(order);
+    }
+
+
+    @Override
+    @Transactional
+    public OrderResponse confirmOrder(Long orderId) {
+        Order orderById = orderCatalogService.getOrderById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException(String.format("Order with id '%d' not found", orderId)));
+
+        log.info("Order with ID {} was found", orderId);
+
+        updateOrderStatus(orderId, OrderStatus.CONFIRMED);
+
+            kafkaEventPublisher.publish(
+                    KafkaTopics.ORDER_CONFIRMED,
+                    orderId.toString(),
+                    new OrderConfirmedEvent(orderId, orderById.getUserId(), orderById.getTotalPrice()));
+        log.info("Order confirmed event was published for orderId: {} ", orderId);
+
+        return orderMapper.toOrderResponse(orderRepository.save(orderById));
     }
 
     @Override
@@ -173,9 +191,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         orderRepository.deleteById(id);
     }
 
-    private void validateStatusTransition(OrderStatus current, OrderStatus next) {
+    private boolean validateStatusTransition(OrderStatus current, OrderStatus next) {
         if (current == next) {
-            return;
+            return false;
         }
 
         Map<OrderStatus, Set<OrderStatus>> allowed = Map.of(
@@ -190,8 +208,8 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                     current, next));
         }
 
-        log.info("Order status updated from {} to {}",
+        log.info("Order status {} is allowed to transition to {}",
                 current, next);
-
+        return true;
     }
 }

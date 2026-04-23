@@ -1,10 +1,7 @@
 package com.ecommerce.order.controller;
 
-import com.ecommerce.commondto.kafka.OrderConfirmedEvent;
 import com.ecommerce.commondto.order.OrderResponse;
 import com.ecommerce.commondto.order.OrderCreateRequest;
-import com.ecommerce.kafka.topic.KafkaTopics;
-import com.ecommerce.kafka.producers.KafkaEventPublisher;
 import com.ecommerce.order.service.OrderCatalogService;
 import com.ecommerce.order.service.OrderModifiedService;
 import jakarta.validation.Valid;
@@ -26,7 +23,6 @@ public class OrderController {
 
     private final OrderModifiedService modifiedService;
     private final OrderCatalogService catalogService;
-    private final KafkaEventPublisher eventPublisher;
 
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
@@ -34,11 +30,9 @@ public class OrderController {
     }
 
     @PostMapping("/confirm-order/{orderId}")
-    public ResponseEntity<String> confirmOrder(@PathVariable Long orderId) {
+    public ResponseEntity<OrderResponse> confirmOrder(@PathVariable Long orderId) {
 
-        eventPublisher.publish(KafkaTopics.ORDER_CONFIRMED,
-                new OrderConfirmedEvent(orderId));
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Order has been confirmed successfully!");
+        return ResponseEntity.ok(modifiedService.confirmOrder(orderId));
     }
 
     @PostMapping("/create")

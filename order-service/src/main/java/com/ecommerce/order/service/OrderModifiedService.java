@@ -7,6 +7,7 @@ import com.ecommerce.order.model.OrderStatus;
 public interface OrderModifiedService {
 
     OrderResponse createOrder(String email, OrderCreateRequest request);
+    OrderResponse confirmOrder(Long orderId);
     void updateOrderStatus(Long orderId, OrderStatus newStatus);
     OrderResponse cancelOrder(Long orderId);
     void deleteOrder(Long id);
