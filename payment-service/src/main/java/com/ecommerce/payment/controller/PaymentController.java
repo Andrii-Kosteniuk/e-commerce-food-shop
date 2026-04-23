@@ -1,12 +1,9 @@
 package com.ecommerce.payment.controller;
 
-import com.ecommerce.commondto.payment.PaymentRequest;
 import com.ecommerce.commondto.payment.PaymentResponse;
 import com.ecommerce.payment.service.PaymentService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,20 +16,26 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody PaymentRequest request) {
+//    @PostMapping
+//    public ResponseEntity<PaymentResponse> createPayment(
+//            @Valid @RequestBody PaymentRequest request,
+//            @RequestHeader("X-User-Id") Long userId) {
+//
+//        log.info("Creating payment for orderId= {}, userId={}", request.orderId(), request.userId());
+//        PaymentResponse payment = paymentService.createPayment(request, userId);
+//
+//        return ResponseEntity
+//                .status(HttpStatus.CREATED)
+//                .body(payment);
+//    }
 
-        log.info("Creating payment for orderId= {}", request.orderId());
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(paymentService.createPayment(request));
-    }
-
-    @PostMapping("/{paymentId}/confirm/{userId}")
-    public ResponseEntity<PaymentResponse> confirmPayment (@PathVariable Long paymentId, @PathVariable Long userId) {
+    @PostMapping("/{paymentId}/confirm")
+    public ResponseEntity<PaymentResponse> confirmPayment (
+            @PathVariable Long paymentId,
+            @RequestHeader("X-User-Id") Long userId) {
 
         log.info("Confirming payment id={}", paymentId);
-        return ResponseEntity.ok(paymentService.confirmPayment(paymentId,userId));
+        return ResponseEntity.ok(paymentService.confirmPayment(paymentId, userId));
     }
 
     @GetMapping("/order/{orderId}")

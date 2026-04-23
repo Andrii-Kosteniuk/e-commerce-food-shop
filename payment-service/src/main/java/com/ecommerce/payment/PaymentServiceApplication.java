@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {
         "com.ecommerce.payment",
+        "com.ecommerce.commonexception",
+        "com.ecommerce.commondto",
         "com.ecommerce.kafka",
         "com.ecommerce.security"
 })

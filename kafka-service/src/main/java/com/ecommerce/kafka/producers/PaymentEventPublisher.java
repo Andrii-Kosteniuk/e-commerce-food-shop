@@ -18,7 +18,11 @@ public class PaymentEventPublisher {
     public void publishPaymentSucceeded(PaymentSucceededEvent event) {
         log.info("Publishing PaymentSucceededEvent for orderId={}, paymentId={}",
                 event.orderId(), event.paymentId());
-        kafkaTemplate.send(KafkaTopics.PAYMENT_SUCCEEDED, String.valueOf(event.orderId()), event)
+
+        kafkaTemplate.send(
+                KafkaTopics.PAYMENT_SUCCEEDED,
+                        String.valueOf(event.paymentId()),
+                        event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish PaymentSucceededEvent for orderId={}: {}",
@@ -35,7 +39,10 @@ public class PaymentEventPublisher {
         log.info("Publishing PaymentFailedEvent for orderId={}, paymentId={}",
                 event.orderId(), event.paymentId());
 
-        kafkaTemplate.send(KafkaTopics.PAYMENT_FAILED, String.valueOf(event.orderId()), event)
+        kafkaTemplate.send
+                        (KafkaTopics.PAYMENT_FAILED,
+                                String.valueOf(event.orderId()),
+                                event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish PaymentFailedEvent for orderId={}: {}",

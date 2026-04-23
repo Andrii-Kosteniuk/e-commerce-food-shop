@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Optional;
 
 @Service
@@ -35,35 +34,37 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse createPayment(PaymentRequest request) {
+    public PaymentResponse createPayment(PaymentRequest request, Long userId) {
         Optional<Payment> paymentByIdempotencyKey = paymentRepository.findByIdempotencyKey(request.idempotencyKey());
 
-        if (paymentByIdempotencyKey.isPresent()) {
-            log.debug("Payment with idempotency key '{}' already exists.", request.idempotencyKey());
-            return paymentMapper.toPaymentResponse(paymentByIdempotencyKey.get());
+            if (!request.userId().equals(userId)) throw new AccessRestrictedException("You are not authorized to create this payment");
+
+            if (paymentByIdempotencyKey.isPresent()) {
+                log.debug("Payment with idempotency key '{}' already exists.", request.idempotencyKey());
+                return paymentMapper.toPaymentResponse(paymentByIdempotencyKey.get());
+            }
+
+            Payment payment = Payment.builder()
+                    .userId(request.userId())
+                    .orderId(request.orderId())
+                    .amount(request.amount())
+                    .currency(request.currency())
+                    .idempotencyKey(request.idempotencyKey())
+                    .status(PaymentStatus.PENDING)
+                    .build();
+
+            paymentRepository.save(payment);
+
+            log.info("Payment created successfully for orderId={}, userId={}",
+                    request.orderId(), request.userId());
+
+            return paymentMapper.toPaymentResponse(payment);
         }
-
-
-        Payment payment = Payment.builder()
-                .userId(request.userId())
-                .orderId(request.orderId())
-                .amount(request.amount())
-                .currency(request.currency())
-                .idempotencyKey(request.idempotencyKey())
-                .status(PaymentStatus.PENDING)
-                .build();
-
-        paymentRepository.save(payment);
-
-        log.info("Payment created successfully for orderId={}, userId={}",
-                request.orderId(), request.userId());
-
-        return paymentMapper.toPaymentResponse(payment);
-    }
 
     @Override
     @Transactional
     public PaymentResponse  confirmPayment(Long paymentId, Long userId) {
+
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId));
 
@@ -72,18 +73,21 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         if (payment.getStatus() != PaymentStatus.PENDING) {
-            log.error("Payment is not in PENDING status: {}", payment.getStatus());
+            log.error("Payment is not in PENDING status: The actual status is {}", payment.getStatus());
             throw new IllegalStateException("Payment is not in PENDING status: " + payment.getStatus());
         }
 
         try {
             String stripePaymentId = stripeGateway.processPayment(payment.getCurrency(), payment.getAmount());
+            if (stripePaymentId.isBlank()) throw new StripePaymentException("Stripe payment id is empty");
+
             payment.setStatus(PaymentStatus.COMPLETED);
             payment.setStripePaymentId(stripePaymentId);
 
             paymentRepository.save(payment);
 
             log.info("Payment {} completed successfully", paymentId);
+
             paymentEventPublisher.publishPaymentSucceeded(
                     new PaymentSucceededEvent(
                             paymentId,
