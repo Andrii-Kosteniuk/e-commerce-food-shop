@@ -51,8 +51,6 @@ public class UserController {
 
     @GetMapping("/{id}")
     UserResponse getUserById(@PathVariable Long id){
-        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        return userMapper.userToUserResponse(user);
+        return userService.getUserById(id);
     }
 }
