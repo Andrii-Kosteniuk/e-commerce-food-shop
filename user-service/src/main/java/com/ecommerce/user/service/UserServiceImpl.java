@@ -4,6 +4,7 @@ import com.ecommerce.commondto.auth.*;
 import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
 
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.commonexception.exception.UnauthorizedException;
 import com.ecommerce.user.jwt.JwtService;
 import com.ecommerce.user.mapper.UserMapper;
@@ -135,5 +136,12 @@ public class UserServiceImpl implements UserService {
         } catch (JwtException e) {
             log.warn("Token invalid or expired during logout, skipping revocation: {}", e.getMessage());
         }
+    }
+
+    @Override
+    public UserResponse getUserById(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userMapper.userToUserResponse(user);
     }
 }
