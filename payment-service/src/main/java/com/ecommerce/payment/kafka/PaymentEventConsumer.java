@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +22,7 @@ public class PaymentEventConsumer {
 
     @KafkaListener(
             topics = KafkaTopics.ORDER_CONFIRMED,
-            groupId = "order-group"
+            groupId = "payment-group"
     )
     public void handleOrderConfirmed(OrderConfirmedEvent event) {
         log.info("Receiving 'ORDER_CONFIRMED' event for orderId: {} ...", event.orderId());
@@ -31,7 +33,7 @@ public class PaymentEventConsumer {
                             event.userId(),
                             event.amount(),
                             Currency.USD.name(),
-                            ""+ event.orderId() + event.userId()
+                            UUID.nameUUIDFromBytes((event.orderId() + ":" + event.userId()).getBytes()).toString()
 
                     ), event.userId()
             );
