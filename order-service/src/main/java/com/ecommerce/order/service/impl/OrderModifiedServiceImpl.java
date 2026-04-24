@@ -112,16 +112,13 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     @Override
     @Transactional
-    public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
+    public void updateOrderStatus(Order order, OrderStatus newStatus) {
 
-        Order orderById = orderCatalogService.getOrderById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id '%d' not found", orderId)));
-
-            if (validateStatusTransition(orderById.getStatus(), newStatus)) {
-                orderById.setStatus(newStatus);
+            if (validateStatusTransition(order.getStatus(), newStatus)) {
+                order.setStatus(newStatus);
             }
 
-        log.info("Order status updated for orderId: {}", orderId);
+        log.info("Order status updated for orderId: {}", order.getId());
     }
 
     @Override
@@ -132,7 +129,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Order with id '%d' not found", orderId)));
 
-        updateOrderStatus(orderId, OrderStatus.CANCELLED);
+        updateOrderStatus(order, OrderStatus.CANCELLED);
         orderRepository.save(order);
 
         var items = order.getItems()
@@ -158,18 +155,25 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     @Override
     @Transactional
-    public OrderResponse confirmOrder(Long orderId) {
+    public OrderResponse confirmOrder(Long orderId, Long userId) {
+
         Order orderById = orderCatalogService.getOrderById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException(String.format("Order with id '%d' not found", orderId)));
+                .orElseThrow(()-> new ResourceNotFoundException(
+                        String.format("Order with id '%d' not found", orderId)));
+
+        if (!orderById.getUserId().equals(userId)) {
+            throw new AccessRestrictedException("You are not allowed to confirm this order");
+        }
 
         log.info("Order with ID {} was found", orderId);
 
-        updateOrderStatus(orderId, OrderStatus.CONFIRMED);
+        updateOrderStatus(orderById, OrderStatus.CONFIRMED);
 
             kafkaEventPublisher.publish(
                     KafkaTopics.ORDER_CONFIRMED,
                     orderId.toString(),
                     new OrderConfirmedEvent(orderId, orderById.getUserId(), orderById.getTotalPrice()));
+
         log.info("Order confirmed event was published for orderId: {} ", orderId);
 
         return orderMapper.toOrderResponse(orderRepository.save(orderById));
@@ -181,7 +185,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     public void deleteOrder(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        Order order = orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         UserResponse userByEmail = userClient.getUserByEmail(email);
         if (!order.getUserId().equals(userByEmail.id())) {
