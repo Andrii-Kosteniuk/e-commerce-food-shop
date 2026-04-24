@@ -1,8 +1,10 @@
 package com.ecommerce.order.kafka;
 
+import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.kafka.topic.KafkaTopics;
 import com.ecommerce.commondto.kafka.PaymentFailedEvent;
 import com.ecommerce.commondto.kafka.PaymentSucceededEvent;
+import com.ecommerce.order.model.Order;
 import com.ecommerce.order.model.OrderStatus;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.order.service.OrderModifiedService;
@@ -31,7 +33,13 @@ public class OrderEventConsumer {
             return;
         }
 
-        orderModifiedService.updateOrderStatus(event.orderId(), OrderStatus.PAID);
+        Order order = orderRepository.findById(event.orderId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Order with id '%d' not found", event.orderId())));
+
+        orderModifiedService.updateOrderStatus(order, OrderStatus.PAID);
+        orderRepository.save(order);
+
         log.info("Order {} marked as paid", event.orderId());
     }
 
