@@ -179,24 +179,6 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         return orderMapper.toOrderResponse(orderRepository.save(orderById));
     }
 
-    @Override
-    @Transactional
-    @CacheEvict(value = "orders", key = "#id")
-    public void deleteOrder(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        UserResponse userByEmail = userClient.getUserByEmail(email);
-        if (!order.getUserId().equals(userByEmail.id())) {
-            throw new AccessRestrictedException("You are not allowed to delete this order");
-        }
-
-        orderRepository.deleteById(id);
-    }
-
     private boolean validateStatusTransition(OrderStatus current, OrderStatus next) {
         if (current == next) {
             return false;
