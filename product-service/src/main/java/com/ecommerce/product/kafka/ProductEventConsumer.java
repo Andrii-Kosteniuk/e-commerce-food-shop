@@ -6,7 +6,6 @@ import com.ecommerce.commonexception.exception.KafkaEventException;
 import com.ecommerce.kafka.topic.KafkaTopics;
 import com.ecommerce.commondto.kafka.OrderCanceledEvent;
 import com.ecommerce.commondto.kafka.OrderCreatedEvent;
-import com.ecommerce.kafka.producers.KafkaEventPublisher;
 import com.ecommerce.product.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +43,7 @@ public class ProductEventConsumer {
 
     @KafkaListener(topics = KafkaTopics.ORDER_CANCELED, groupId = "product-group")
     public void handleOrderCanceled(OrderCanceledEvent event) {
+        log.info("Receiving " + KafkaTopics.ORDER_CANCELED + " event for orderId: {}", event.orderId());
         try {
             event.items().forEach(item -> {
                 inventoryService.increaseStock(item.productId(), item.quantity());
@@ -55,20 +55,4 @@ public class ProductEventConsumer {
 
     }
 
-
-//    @KafkaListener(topics = KafkaTopics.STOCK_RELEASED, groupId = "product-group")
-//    public void handleStockReleased(StockReleasedEvent event) {
-//        log.info("Releasing stock for orderId: {}", event.orderId());
-//
-//        try {
-//            event.items().forEach(item -> {
-//                inventoryService.increaseStock(item.productId(), item.quantity());
-//                log.info("Successfully released stock for product: {}", item.productId());
-//            });
-//
-//        } catch (Exception e) {
-//            log.error("Failed to release stock for order ID: '{}'", event.orderId(), e);
-//            throw new KafkaEventException("Failed to release stock for order ID: '" + event.orderId() + "'", e.getCause());
-//        }
-//    }
 }
