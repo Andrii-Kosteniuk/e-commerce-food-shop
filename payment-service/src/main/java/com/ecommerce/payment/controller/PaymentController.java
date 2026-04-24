@@ -16,19 +16,6 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-//    @PostMapping
-//    public ResponseEntity<PaymentResponse> createPayment(
-//            @Valid @RequestBody PaymentRequest request,
-//            @RequestHeader("X-User-Id") Long userId) {
-//
-//        log.info("Creating payment for orderId= {}, userId={}", request.orderId(), request.userId());
-//        PaymentResponse payment = paymentService.createPayment(request, userId);
-//
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(payment);
-//    }
-
     @PostMapping("/{paymentId}/confirm")
     public ResponseEntity<PaymentResponse> confirmPayment (
             @PathVariable Long paymentId,
