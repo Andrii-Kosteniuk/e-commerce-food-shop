@@ -37,8 +37,6 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse createPayment(PaymentRequest request, Long userId) {
         Optional<Payment> paymentByIdempotencyKey = paymentRepository.findByIdempotencyKey(request.idempotencyKey());
 
-            if (!request.userId().equals(userId)) throw new AccessRestrictedException("You are not authorized to create this payment");
-
             if (paymentByIdempotencyKey.isPresent()) {
                 log.debug("Payment with idempotency key '{}' already exists.", request.idempotencyKey());
                 return paymentMapper.toPaymentResponse(paymentByIdempotencyKey.get());
