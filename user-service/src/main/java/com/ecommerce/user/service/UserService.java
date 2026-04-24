@@ -15,4 +15,6 @@ public interface UserService {
     void logout(LogOutRequest request);
 
     UserResponse getUserByEmail(String email);
+
+    UserResponse getUserById(Long userId);
 }
