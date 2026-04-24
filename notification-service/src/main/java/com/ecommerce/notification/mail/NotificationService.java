@@ -2,7 +2,7 @@ package com.ecommerce.notification.mail;
 
 import com.ecommerce.commondto.order.OrderItemResponse;
 import com.ecommerce.commondto.user.UserResponse;
-import com.ecommerce.notification.UserServiceFeignClient;
+import com.ecommerce.notification.feign.UserServiceFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
