@@ -30,9 +30,11 @@ public class OrderController {
     }
 
     @PostMapping("/confirm-order/{orderId}")
-    public ResponseEntity<OrderResponse> confirmOrder(@PathVariable Long orderId) {
+    public ResponseEntity<OrderResponse> confirmOrder(
+            @PathVariable Long orderId,
+            @RequestHeader("X-User-Id") Long userId) {
 
-        return ResponseEntity.ok(modifiedService.confirmOrder(orderId));
+        return ResponseEntity.ok(modifiedService.confirmOrder(orderId, userId));
     }
 
     @PostMapping("/create")
