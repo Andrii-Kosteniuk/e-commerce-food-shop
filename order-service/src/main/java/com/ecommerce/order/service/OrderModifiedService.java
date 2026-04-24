@@ -11,6 +11,4 @@ public interface OrderModifiedService {
     OrderResponse confirmOrder(Long orderId, Long userId);
     void updateOrderStatus(Order order, OrderStatus newStatus);
     OrderResponse cancelOrder(Long orderId);
-    void deleteOrder(Long id);
-
 }
