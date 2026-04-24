@@ -52,10 +52,4 @@ public class OrderController {
 
         return ResponseEntity.ok(modifiedService.cancelOrder(orderId));
     }
-
-    @DeleteMapping("/delete-order/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        modifiedService.deleteOrder(id);
-        return ResponseEntity.noContent().build();
-    }
 }
