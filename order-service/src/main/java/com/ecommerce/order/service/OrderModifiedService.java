@@ -10,5 +10,5 @@ public interface OrderModifiedService {
     OrderResponse createOrder(String email, OrderCreateRequest request);
     OrderResponse confirmOrder(Long orderId, Long userId);
     void updateOrderStatus(Order order, OrderStatus newStatus);
-    OrderResponse cancelOrder(Long orderId);
+    void cancelOrder(Long orderId);
 }
