@@ -1,15 +1,14 @@
 package com.ecommerce.order.service.impl;
 
 import com.ecommerce.commondto.kafka.OrderCanceledEvent;
-import com.ecommerce.commondto.kafka.OrderConfirmedEvent;
 import com.ecommerce.commondto.kafka.OrderCreatedEvent;
+import com.ecommerce.commondto.kafka.PaymentCreateEvent;
 import com.ecommerce.commondto.order.OrderCreateRequest;
 import com.ecommerce.commondto.order.OrderResponse;
 import com.ecommerce.commondto.order.StockItem;
 import com.ecommerce.commondto.user.UserResponse;
-import com.ecommerce.commonexception.exception.AccessRestrictedException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.kafka.producers.KafkaEventPublisher;
 import com.ecommerce.order.feign.ProductFeignClient;
 import com.ecommerce.order.feign.UserFeignClient;
@@ -24,13 +23,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,40 +53,17 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
         UserResponse user = userClient.getUserByEmail(email);
 
-        List<OrderItem> items = request.products().stream()
-                .map(item -> {
-                    var productInfo = productClient.getProductById(item.productId());
+        List<OrderItem> items = processBuildingOrderItemsFromRequest(request);
 
-                    if (productInfo.quantity() < item.quantity()) {
-                        log.warn("Insufficient stock for product: {}. Available: {}", item.productId(), productInfo.quantity());
-                        throw new IllegalArgumentException(String.format(
-                                "Insufficient stock for '%s'. Available: %d", productInfo.name(), productInfo.quantity()));
-                    }
-
-                    return OrderItem.builder()
-                            .productId(productInfo.id())
-                            .productName(productInfo.name())
-                            .price(productInfo.price())
-                            .category(productInfo.category())
-                            .quantity(item.quantity())
-                            .build();
-                })
-                        .toList();
-
-        BigDecimal total = items.stream()
-                .map(orderItem -> orderItem.getPrice()
-                        .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-
+        BigDecimal total = getTotalPrice(items);
 
         Order order = Order.builder()
                 .userId(user.id())
                 .items(items)
                 .totalPrice(total)
                 .status(OrderStatus.NEW)
-                .orderCreateDate(LocalDateTime.now())
-                .orderUpdateDate(LocalDateTime.now())
+                .orderCreateDate(LocalDateTime.now(ZoneId.systemDefault()))
+                .orderUpdateDate(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
 
         items.forEach(item -> item.setOrder(order));
@@ -111,7 +87,6 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     }
 
     @Override
-    @Transactional
     public void updateOrderStatus(Order order, OrderStatus newStatus) {
 
             if (validateStatusTransition(order.getStatus(), newStatus)) {
@@ -124,7 +99,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     @Override
     @Transactional
     @CacheEvict(value = "orders", key = "#orderId")
-    public OrderResponse cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Order with id '%d' not found", orderId)));
@@ -149,7 +124,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
         log.info("Order {} cancelled", orderId);
 
-        return orderMapper.toOrderResponse(order);
+        orderMapper.toOrderResponse(order);
     }
 
 
@@ -162,7 +137,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                         String.format("Order with id '%d' not found", orderId)));
 
         if (!orderById.getUserId().equals(userId)) {
-            throw new AccessRestrictedException("You are not allowed to confirm this order");
+            throw new AccessDeniedException("You are not allowed to confirm this order");
         }
 
         log.info("Order with ID {} was found", orderId);
@@ -170,9 +145,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         updateOrderStatus(orderById, OrderStatus.CONFIRMED);
 
             kafkaEventPublisher.publish(
-                    KafkaTopics.ORDER_CONFIRMED,
-                    orderId.toString(),
-                    new OrderConfirmedEvent(orderId, orderById.getUserId(), orderById.getTotalPrice()));
+                    KafkaTopics.PAYMENT_CREATE,
+                    orderId.toString(), new PaymentCreateEvent(orderId, userId, orderById.getTotalPrice())
+            );
 
         log.info("Order confirmed event was published for orderId: {} ", orderId);
 
@@ -199,5 +174,34 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         log.info("Order status {} is allowed to transition to {}",
                 current, next);
         return true;
+    }
+
+    private BigDecimal getTotalPrice(List<OrderItem> items) {
+        return items.stream()
+                .map(orderItem -> orderItem.getPrice()
+                        .multiply(BigDecimal.valueOf(orderItem.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private List<OrderItem> processBuildingOrderItemsFromRequest(OrderCreateRequest request) {
+       return request.products().stream()
+                .map(item -> {
+                    var productInfo = productClient.getProductById(item.productId());
+
+                    if (productInfo.quantity() < item.quantity()) {
+                        log.warn("Insufficient stock for product: {}. Available: {}", item.productId(), productInfo.quantity());
+                        throw new IllegalArgumentException(String.format(
+                                "Insufficient stock for '%s'. Available: %d", productInfo.name(), productInfo.quantity()));
+                    }
+
+                    return OrderItem.builder()
+                            .productId(productInfo.id())
+                            .productName(productInfo.name())
+                            .price(productInfo.price())
+                            .category(productInfo.category())
+                            .quantity(item.quantity())
+                            .build();
+                })
+                .toList();
     }
 }

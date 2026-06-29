@@ -1,17 +1,17 @@
-package com.ecommerce.user.service;
+package com.ecommerce.user.service.impl;
 
 import com.ecommerce.commondto.auth.*;
 import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.commonexception.exception.ResourceAlreadyExistsException;
 
-import com.ecommerce.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.commonexception.exception.UnauthorizedException;
 import com.ecommerce.user.jwt.JwtService;
 import com.ecommerce.user.mapper.UserMapper;
 import com.ecommerce.user.model.Role;
 import com.ecommerce.user.model.User;
 import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.user.security.TokenBlocklistService;
+import com.ecommerce.user.service.UserAuthenticationService;
+import com.ecommerce.user.service.UserRepositoryService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +19,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService {
+@Transactional(readOnly = true)
+public class UserAuthenticationServiceImpl implements UserAuthenticationService {
 
     private final UserRepository userRepository;
+    private final UserRepositoryService userRepositoryService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final TokenBlocklistService tokenBlocklistService;
@@ -34,8 +37,10 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public AuthenticationResponse registerUser(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
+        String email = request.email();
+        if (userRepository.existsByEmail(email)) {
             throw new ResourceAlreadyExistsException(
                     "User with such an email already exists"
             );
@@ -44,18 +49,18 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setEmail(request.email());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(Role.USER);
+        user.setRole(Role.valueOf(request.role()));
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        UserResponse userResponse = getUserByEmail(request.email());
+        UserResponse userResponse = userMapper.userToUserResponse(savedUser);
 
         String token = jwtService.generateAccessToken(userResponse.id(), userResponse.email(), userResponse.role());
         String refreshToken = jwtService.generateRefreshToken(userResponse.id(), userResponse.email(), userResponse.role());
 
-        log.info("User '{}' has been registered", user.getEmail());
+        log.info("User '{}' has been registered with role {}", userResponse.email(), userResponse.role());
 
         return new AuthenticationResponse(token, refreshToken);
     }
@@ -64,6 +69,7 @@ public class UserServiceImpl implements UserService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
         log.info("Authenticating user...");
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -71,7 +77,7 @@ public class UserServiceImpl implements UserService {
                 )
         );
 
-        UserResponse user = getUserByEmail(request.email());
+        UserResponse user = userRepositoryService.getUserByEmail(request.email());
 
         String accessToken = jwtService.generateAccessToken(user.id(), user.email(), user.role());
         String refreshToken = jwtService.generateRefreshToken(user.id(), user.email(), user.role());
@@ -110,14 +116,6 @@ public class UserServiceImpl implements UserService {
         revokeIfValid(request.refreshToken(), "refresh");
     }
 
-    @Override
-    public UserResponse getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(userMapper::userToUserResponse)
-                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
-
-    }
-
     private void revokeIfValid(String token, String expectedType) {
         try {
             var extractedClaims = jwtService.extractClaims(token);
@@ -136,12 +134,5 @@ public class UserServiceImpl implements UserService {
         } catch (JwtException e) {
             log.warn("Token invalid or expired during logout, skipping revocation: {}", e.getMessage());
         }
-    }
-
-    @Override
-    public UserResponse getUserById(Long userId){
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return userMapper.userToUserResponse(user);
     }
 }

@@ -5,7 +5,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,13 +18,13 @@ import java.util.UUID;
 public class JwtService {
 
     @Value("${jwt.secret}")
-    private  String JWT_SECRET;
+    private  String jwtSecret;
 
     @Value("${jwt.expiration}")
-    private long ACCESS_TOKEN_EXPIRATION;
+    private long accessTokenExpirationTime;
 
     @Value("${jwt.refresh-token}")
-    private long REFRESH_TOKEN_EXPIRATION;
+    private long refreshTokenExpirationTime;
 
     public boolean validateToken(String token) {
         try {
@@ -49,12 +48,12 @@ public class JwtService {
 
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateAccessToken(Long userId, String email, String role) {
-        return buildToken(userId, email, role, ACCESS_TOKEN_EXPIRATION, "access");
+        return buildToken(userId, email, role, accessTokenExpirationTime, "access");
     }
 
     public List<String> getRolesFromToken(String token) {
@@ -75,7 +74,7 @@ public class JwtService {
     }
 
     public String generateRefreshToken(Long userId, String email, String role) {
-        return buildToken(userId, email, role, REFRESH_TOKEN_EXPIRATION, "refresh");
+        return buildToken(userId, email, role, refreshTokenExpirationTime, "refresh");
     }
 
     private String buildToken(Long userId, String email, String role, long expiration, String type) {

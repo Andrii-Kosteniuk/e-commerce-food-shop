@@ -1,6 +1,6 @@
 package com.ecommerce.kafka.config;
 
-import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

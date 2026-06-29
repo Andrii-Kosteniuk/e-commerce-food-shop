@@ -1,7 +1,7 @@
 package com.ecommerce.order.kafka;
 
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.commondto.kafka.PaymentFailedEvent;
 import com.ecommerce.commondto.kafka.PaymentSucceededEvent;
 import com.ecommerce.order.model.Order;

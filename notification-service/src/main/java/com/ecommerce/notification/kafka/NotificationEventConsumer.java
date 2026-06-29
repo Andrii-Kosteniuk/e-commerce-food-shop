@@ -1,6 +1,6 @@
 package com.ecommerce.notification.kafka;
 
-import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.commondto.kafka.OrderCanceledEvent;
 import com.ecommerce.commondto.kafka.OrderCreatedEvent;
 import com.ecommerce.commondto.kafka.PaymentFailedEvent;
@@ -20,17 +20,21 @@ public class NotificationEventConsumer {
     private final NotificationService notificationService;
 
     @Value("${notification.confirmation-base-url}")
-    private String CONFIRMATION_URL;
+    private String confirmationUrl;
+
+    @Value("${notification.confirmation-order-url}")
+    private String confirmOrderUrl;
 
     @KafkaListener(topics = KafkaTopics.ORDER_CREATED, groupId = "notification-group")
     public void handleOrderCreated(OrderCreatedEvent event) {
         log.info("Sending 'ORDER_CREATED' notification to userId: {}", event.userId());
 
+
         notificationService.notifyOrderCreated(
                 event.userEmail(),
                 event.orderId(),
                 event.totalPrice().toString(),
-                event.response().items(), CONFIRMATION_URL + "/api/v1/orders/confirm-order/" + event.orderId()
+                event.response().items(), confirmationUrl + confirmOrderUrl + event.orderId()
 
         );
     }

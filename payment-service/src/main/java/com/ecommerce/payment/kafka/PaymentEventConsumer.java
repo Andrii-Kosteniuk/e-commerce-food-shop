@@ -1,9 +1,9 @@
 package com.ecommerce.payment.kafka;
 
-import com.ecommerce.commondto.kafka.OrderConfirmedEvent;
+import com.ecommerce.commondto.kafka.PaymentCreateEvent;
 import com.ecommerce.commondto.payment.PaymentRequest;
 import com.ecommerce.commonexception.exception.KafkaEventException;
-import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.payment.model.Currency;
 import com.ecommerce.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +21,11 @@ public class PaymentEventConsumer {
 
 
     @KafkaListener(
-            topics = KafkaTopics.ORDER_CONFIRMED,
+            topics = KafkaTopics.PAYMENT_CREATE,
             groupId = "payment-group"
     )
-    public void handleOrderConfirmed(OrderConfirmedEvent event) {
-        log.info("Receiving 'ORDER_CONFIRMED' event for orderId: {} ...", event.orderId());
+    public void handleOrderConfirmed(PaymentCreateEvent event) {
+        log.info("Receiving 'PAYMENT_CREATE' event for orderId: {} ...", event.orderId());
         try {
             paymentService.createPayment(
                     new PaymentRequest(

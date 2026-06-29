@@ -15,8 +15,8 @@ public class KafkaErrorHandlingConfig {
     public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<String, Object> template){
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(template,
-                (record, exception) ->
-                        new TopicPartition(record.topic() + ".DLT", record.partition()));
+                (consumerRecord, exception) ->
+                        new TopicPartition(consumerRecord.topic() + ".DLT", consumerRecord.partition()));
 
         ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
         backOff.setMaxElapsedTime(30_000L);

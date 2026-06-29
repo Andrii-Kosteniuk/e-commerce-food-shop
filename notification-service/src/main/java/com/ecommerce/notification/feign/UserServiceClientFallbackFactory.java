@@ -1,6 +1,5 @@
 package com.ecommerce.notification.feign;
 
-import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.commonexception.exception.ServiceUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,15 +12,12 @@ import org.springframework.stereotype.Component;
 public class UserServiceClientFallbackFactory implements FallbackFactory<UserServiceFeignClient> {
     @Override
     public UserServiceFeignClient create(Throwable cause) {
-        return new UserServiceFeignClient() {
-            @Override
-            public UserResponse getUserById(Long id) {
-                log.error("[CircuitBreaker] user-service unavailable — getUserById({}): {}",
-                        id, cause.getMessage());
+        return id -> {
+            log.error("[CircuitBreaker] user-service temporary unavailable — getUserById({}): {}",
+                    id, cause.getMessage());
 
-                throw new ServiceUnavailableException(
-                        "User service is currently unavailable. Please try again later.");
-            }
+            throw new ServiceUnavailableException(
+                    "User service is currently unavailable. Please try again later.");
         };
     }
 }

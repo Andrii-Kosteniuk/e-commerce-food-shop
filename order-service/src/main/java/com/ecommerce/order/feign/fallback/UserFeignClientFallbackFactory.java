@@ -17,7 +17,7 @@ public class UserFeignClientFallbackFactory implements FallbackFactory<UserFeign
         return new UserFeignClient() {
             @Override
             public UserResponse getUserById(Long id) {
-                log.error("[CircuitBreaker] user-service unavailable — getUserById({}): {}",
+                log.error("[CircuitBreaker] user-service temporary unavailable — getUserById({}): {}",
                         id, cause.getMessage());
 
                 throw new ServiceUnavailableException(
@@ -27,7 +27,7 @@ public class UserFeignClientFallbackFactory implements FallbackFactory<UserFeign
 
             @Override
             public UserResponse getUserByEmail(String email) {
-                log.error("[CircuitBreaker] user-service unavailable — getUserByEmail({}): {}",
+                log.error("[CircuitBreaker] user-service temporary unavailable — getUserByEmail({}): {}",
                         email, cause.getMessage());
 
                 throw new ServiceUnavailableException(

@@ -4,21 +4,22 @@ import com.ecommerce.commondto.kafka.PaymentFailedEvent;
 import com.ecommerce.commondto.kafka.PaymentSucceededEvent;
 import com.ecommerce.commondto.payment.PaymentRequest;
 import com.ecommerce.commondto.payment.PaymentResponse;
-import com.ecommerce.commonexception.exception.AccessRestrictedException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
 import com.ecommerce.commonexception.exception.StripePaymentException;
 import com.ecommerce.kafka.producers.PaymentEventPublisher;
 import com.ecommerce.payment.mapper.PaymentMapper;
-import com.ecommerce.payment.mock.StripeGateway;
+import com.ecommerce.payment.stripe.StripeGateway;
 import com.ecommerce.payment.model.Payment;
 import com.ecommerce.payment.model.PaymentStatus;
 import com.ecommerce.payment.repository.PaymentRepository;
 import com.ecommerce.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,12 +35,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse createPayment(PaymentRequest request, Long userId) {
+    public void createPayment(PaymentRequest request, Long userId) {
         Optional<Payment> paymentByIdempotencyKey = paymentRepository.findByIdempotencyKey(request.idempotencyKey());
 
             if (paymentByIdempotencyKey.isPresent()) {
                 log.debug("Payment with idempotency key '{}' already exists.", request.idempotencyKey());
-                return paymentMapper.toPaymentResponse(paymentByIdempotencyKey.get());
+                paymentMapper.toPaymentResponse(paymentByIdempotencyKey.get());
+                return;
             }
 
             Payment payment = Payment.builder()
@@ -47,7 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .orderId(request.orderId())
                     .amount(request.amount())
                     .currency(request.currency())
-                    .idempotencyKey(request.idempotencyKey())
+                    .idempotencyKey(UUID.randomUUID().toString())
                     .status(PaymentStatus.PENDING)
                     .build();
 
@@ -56,8 +58,8 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("Payment created successfully for orderId={}, userId={}",
                     request.orderId(), request.userId());
 
-            return paymentMapper.toPaymentResponse(payment);
-        }
+        paymentMapper.toPaymentResponse(payment);
+    }
 
     @Override
     @Transactional
@@ -67,7 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found: " + paymentId));
 
         if (!payment.getUserId().equals(userId)){
-            throw new AccessRestrictedException("You are not authorized to confirm this payment");
+            throw new AccessDeniedException("You have no permission to confirm this payment");
         }
 
         if (payment.getStatus() != PaymentStatus.PENDING) {
@@ -76,7 +78,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         try {
-            String stripePaymentId = stripeGateway.processPayment(payment.getCurrency(), payment.getAmount());
+            String stripePaymentId = stripeGateway.processPayment();
             if (stripePaymentId.isBlank()) throw new StripePaymentException("Stripe payment id is empty");
 
             payment.setStatus(PaymentStatus.COMPLETED);

@@ -3,7 +3,7 @@ package com.ecommerce.product.kafka;
 import com.ecommerce.commondto.order.OrderItemResponse;
 import com.ecommerce.commonexception.exception.InsufficientStockException;
 import com.ecommerce.commonexception.exception.KafkaEventException;
-import com.ecommerce.kafka.topic.KafkaTopics;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.commondto.kafka.OrderCanceledEvent;
 import com.ecommerce.commondto.kafka.OrderCreatedEvent;
 import com.ecommerce.product.service.InventoryService;

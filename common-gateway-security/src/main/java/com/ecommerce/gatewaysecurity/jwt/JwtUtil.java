@@ -14,7 +14,7 @@ import javax.crypto.SecretKey;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private String JWT_SECRET;
+    private String jwtSecret;
 
     public boolean isValidToken(String token) {
         try {
@@ -53,7 +53,7 @@ public class JwtUtil {
 
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

@@ -1,7 +1,6 @@
 package com.ecommerce.order.feign;
 
 import com.ecommerce.commondto.product.ProductResponse;
-import com.ecommerce.feignconfig.FeignClientConfig;
 import com.ecommerce.order.feign.fallback.ProductFeignClientFallbackFactory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

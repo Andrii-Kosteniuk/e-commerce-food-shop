@@ -25,7 +25,7 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.confirmPayment(paymentId, userId));
     }
 
-    @GetMapping("/order/{orderId}")
+    @GetMapping("/payment/{orderId}")
     public ResponseEntity<PaymentResponse> getPaymentByOrderId (@PathVariable Long orderId) {
 
         log.info("Fetching payment for orderId={}", orderId);
