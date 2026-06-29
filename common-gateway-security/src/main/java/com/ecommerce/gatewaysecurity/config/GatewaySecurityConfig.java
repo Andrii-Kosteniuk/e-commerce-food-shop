@@ -21,7 +21,15 @@ public class GatewaySecurityConfig {
 
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .addFilterBefore(gatewayAuthenticationFilter, SecurityWebFiltersOrder.AUTHORIZATION )
+                .authorizeExchange(exchange -> exchange
+                        .pathMatchers(
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/api/v1/auth/**"
+                        ).permitAll()
+                        .anyExchange().authenticated()
+                )
+                .addFilterBefore(gatewayAuthenticationFilter, SecurityWebFiltersOrder.AUTHORIZATION)
                 .build();
     }
 }
