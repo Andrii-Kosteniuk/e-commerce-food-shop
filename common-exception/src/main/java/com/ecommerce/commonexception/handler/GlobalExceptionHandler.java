@@ -8,22 +8,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final String UNAUTHORIZED_MESSAGE = "You are not authorized";
+    private static final String VARIFICATION_ERROR_MESSAGE = "Validation error";
+    private static final String INVALID_VALUE_MESSAGE = "Invalid value '%s' for parameter '%s'.";
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex, HttpServletRequest request) {
-        return buildErrorResponse(ex.getMessage() + ". Check data you have provided", HttpStatus.UNAUTHORIZED, request.getRequestURI());
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(BadCredentialsException ex, HttpServletRequest request) {
+        return buildErrorResponse(UNAUTHORIZED_MESSAGE, HttpStatus.UNAUTHORIZED, request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -31,7 +37,7 @@ public class GlobalExceptionHandler {
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .orElse("Validation error");
+                .orElse(VARIFICATION_ERROR_MESSAGE);
 
         return buildErrorResponse(errorMessage, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
@@ -39,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex, HttpServletRequest request) {
         log.error(ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request.getRequestURI());
     }
 
     @ExceptionHandler(IllegalStateException.class)
@@ -66,9 +72,10 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI());
     }
 
-    @ExceptionHandler(AccessRestrictedException.class)
-    public ResponseEntity<ErrorResponse> handleResourceAccessDeniedException(AccessRestrictedException ex, HttpServletRequest request) {
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleResourceAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
         log.error(ex.getMessage());
+
         return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN, request.getRequestURI());
     }
 
@@ -88,17 +95,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
 
         String message = String.format(
-                "Invalid value '%s' for parameter '%s'.",
+                INVALID_VALUE_MESSAGE,
                 ex.getValue(),
                 ex.getName()
         );
 
         return buildErrorResponse(message, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
+
     @ExceptionHandler(ServiceUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleServiceUnavailable(
             ServiceUnavailableException ex, HttpServletRequest request) {
-        log.error("Downstream service unavailable: {}", ex.getMessage());
+        log.error("Downstream service temporary unavailable: {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request.getRequestURI());
     }
 
@@ -109,21 +117,20 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
     }
 
-
-    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, String path) {
-        ErrorResponse apiError = new ErrorResponse(
-                LocalDateTime.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                message,
-                path);
-        return new ResponseEntity<>(apiError, status);
-    }
-
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientStock(
             InsufficientStockException ex, HttpServletRequest request) {
         log.warn(ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, String path) {
+        ErrorResponse apiError = new ErrorResponse(
+                LocalDateTime.now(ZoneId.systemDefault()),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                path);
+        return new ResponseEntity<>(apiError, status);
     }
 }
