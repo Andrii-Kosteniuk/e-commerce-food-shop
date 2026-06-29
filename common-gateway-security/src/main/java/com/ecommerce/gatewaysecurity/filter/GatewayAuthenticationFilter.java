@@ -1,6 +1,7 @@
 package com.ecommerce.gatewaysecurity.filter;
 
 import com.ecommerce.gatewaysecurity.jwt.JwtUtil;
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +28,16 @@ public class GatewayAuthenticationFilter implements WebFilter {
 
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String PUBLIC_PATH = "/api/v1/auth/";
-    private static final String INTERNAL_PATH = "/api/v1/internal/";
+
+    @Value("${gateway.path.public}")
+    private  String publicPath;
+    @Value("${gateway.path.internal}")
+    private String internalPath;
+    private static final List<String> EXCLUDED_PATHS =
+            List.of(
+                    "/actuator/health",
+                    "/actuator/info"
+    );
 
     @Value("${security.internal-api-key}")
     private String internalApiKey;
@@ -38,13 +47,13 @@ public class GatewayAuthenticationFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        if (path.startsWith(INTERNAL_PATH)) {
+        if (path.startsWith(internalPath)) {
             log.warn("Blocked external request to internal path: {}", path);
             exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
             return exchange.getResponse().setComplete();
         }
 
-        if (path.startsWith(PUBLIC_PATH)) {
+        if (path.startsWith(publicPath) || EXCLUDED_PATHS.contains(path)) {
             return chain.filter(exchange);
         }
 
@@ -65,7 +74,9 @@ public class GatewayAuthenticationFilter implements WebFilter {
         String email = jwtUtil.extractEmail(token);
         String role = jwtUtil.extractRole(token);
 
-        if (redisTemplate.hasKey("blocklist:" + tokenId)) {
+        boolean hasKey = redisTemplate.hasKey("blocklist:" + tokenId);
+
+        if (hasKey) {
             log.warn("Token is blocklisted");
             return unauthorizeRequest(exchange);
         }
