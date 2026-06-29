@@ -6,26 +6,18 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/user_service_db
+    url: jdbc:postgresql://user-postgres:5432/user_service_db
     username: postgres
-    password: ${USER_PASSWORD}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   data:
     redis:
       port: 6379
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:redis}
       password: ${REDIS_PASSWORD}
   cache:
     type: redis
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-
 security:
-  internal-api-key: ${INTERNAL_API_KEY}
+  internal-api-key: ${SECURITY_INTERNAL_API_KEY}

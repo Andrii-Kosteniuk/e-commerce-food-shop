@@ -11,7 +11,18 @@ spring:
 #        format_sql: true
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET  }
   expiration: 3_600_000 # 1 hour
   refresh-token: 86_400_000 # 24 hours
 
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://discovery-service:8761/eureka/}
+  instance:
+    prefer-ip-address: false
+    hostname: ${spring.application.name}
+    instance-id: ${spring.application.name}:${server.port}
+    home-page-url: http://${spring.application.name}:${server.port}/
+    status-page-url: http://${spring.application.name}:${server.port}/actuator/info
+    health-check-url: http://${spring.application.name}:${server.port}/actuator/health

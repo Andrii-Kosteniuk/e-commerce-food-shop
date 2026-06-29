@@ -6,7 +6,7 @@ spring:
     name: order-service
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka-service:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -28,15 +28,15 @@ spring:
         enabled: false
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_service_db
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://order-postgres:5432/order_service_db}
     username: postgres
-    password: ${USER_PASSWORD}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   data:
     redis:
       port: 6379
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:redis}
       password: ${REDIS_PASSWORD}
   cache:
     type: redis
@@ -59,7 +59,7 @@ resilience4j:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URI:http://discovery-service:8761/eureka/}
       registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
@@ -68,4 +68,4 @@ eureka:
     lease-expiration-duration-in-seconds: 15
 
 security:
-  internal-api-key: ${INTERNAL_API_KEY}
+  internal-api-key: ${SECURITY_INTERNAL_API_KEY}

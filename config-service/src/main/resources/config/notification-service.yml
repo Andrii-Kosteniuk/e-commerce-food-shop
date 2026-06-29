@@ -6,7 +6,7 @@ spring:
     name: notification-service
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka-service:9092}
     consumer:
       group-id: notification-group
       auto-offset-reset: earliest
@@ -23,7 +23,7 @@ spring:
 
 
   mail:
-    host: localhost
+    host: mailhog
     port: 1025
     username:
     password:
@@ -36,12 +36,13 @@ spring:
 
 notification:
   from-email: noreply@-e-commerce-shop.com
-  confirmation-base-url: ${GATEWAY_URL:http://localhost:9091}
+  confirmation-base-url: ${EUREKA_URI:http://api-gateway:9091}
+  confirmation-order-url: /api/v1/orders/confirm-order/
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URI:http://discovery-service:8761/eureka/}
       registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true

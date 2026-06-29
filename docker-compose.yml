@@ -1,0 +1,320 @@
+services:
+
+  config-service:
+    build: /config-service
+    container_name: config-service
+    ports:
+      - "8888:8888"
+    environment:
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health || exit 1" ]
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    depends_on:
+      config-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - backend
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "9091:9091"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - backend
+
+  kafka-service:
+    image: apache/kafka:latest
+    container_name: kafka-service
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://kafka-service:9092,CONTROLLER://kafka-service:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-service:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-service:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    environment:
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - backend
+
+  user-postgres:
+    image: postgres:16-alpine
+    container_name: user-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: user_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d user_service_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  product-postgres:
+    image: postgres:16-alpine
+    container_name: product-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: product_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d product_service_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  order-postgres:
+    image: postgres:16-alpine
+    container_name: order-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: order_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+    ports:
+      - "5434:5432"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d order_service_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  payment-postgres:
+    image: postgres:16-alpine
+    container_name: payment-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: payment_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+    ports:
+      - "5435:5432"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d payment_service_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  auth-service:
+    build: /auth-service
+    container_name: auth-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - backend
+
+  user-service:
+    build: /user-service
+    container_name: user-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      api-gateway:
+        condition: service_started
+      user-postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/user_service_db
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - backend
+
+  product-service:
+    build: /product-service
+    container_name: product-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      api-gateway:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      product-postgres:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
+      POSTGRES_DB: product_service_db
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product-postgres:5432/product_service_db
+      REDIS_HOST: redis
+    networks:
+      - backend
+
+  order-service:
+    build: /order-service
+    container_name: order-service
+    depends_on:
+      api-gateway:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      order-postgres:
+        condition: service_healthy
+      product-postgres:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
+      POSTGRES_DB: order_service_db
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      EUREKA_URI: http://discovery-service:8761/eureka/
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-postgres:5432/order_service_db
+      REDIS_HOST: redis
+    networks:
+      - backend
+
+  payment-service:
+    build: /payment-service
+    container_name: payment-service
+    depends_on:
+      api-gateway:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      product-service:
+        condition: service_started
+    environment:
+      POSTGRES_DB: payment_service_db
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      EUREKA_URI: http://discovery-service:8761/eureka/
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-postgres:5432/payment_service_db
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      REDIS_HOST: redis
+    networks:
+      - backend
+
+  notification-service:
+    build: /notification-service
+    container_name: notification-service
+    depends_on:
+      api-gateway:
+        condition: service_started
+      discovery-service:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    environment:
+      SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      EUREKA_URI: http://discovery-service:8761/eureka/
+    networks:
+      - backend
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+volumes:
+  db-data:
