@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,7 +21,7 @@ public class PaymentSecurity {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(this::disableCsrfForStatelessApi)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class )
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
@@ -32,5 +32,13 @@ public class PaymentSecurity {
         return http.build();
     }
 
-
+    /**
+     * CSRF protection is not required for this service.
+     * All endpoints are stateless: authentication is performed via Bearer tokens
+     * or the internal API key header (X-Internal-API-Key).
+     */
+    @SuppressWarnings("java:S4502")
+    private void disableCsrfForStatelessApi(CsrfConfigurer<HttpSecurity> csrf) {
+        csrf.disable();
+    }
 }
