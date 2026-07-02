@@ -229,6 +229,7 @@ services:
       JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
       POSTGRES_DB: product_service_db
       SECURITY_INTERNAL_API_KEY: ${SECURITY_INTERNAL_API_KEY}
+      EUREKA_URI: http://discovery-service:8761/eureka/
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
       SPRING_DATASOURCE_URL: jdbc:postgresql://product-postgres:5432/product_service_db
@@ -239,6 +240,9 @@ services:
   order-service:
     build: /order-service
     container_name: order-service
+    ports:
+      - "8883:8883"
+      - "5005:5005"
     depends_on:
       api-gateway:
         condition: service_started
@@ -251,6 +255,7 @@ services:
       product-postgres:
         condition: service_healthy
     environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
