@@ -24,25 +24,25 @@ public class CatalogController {
 
 
     @GetMapping
-    public ResponseEntity<Page<ProductResponse>> retrieveAllProducts(@PageableDefault(size = 20, sort = "name") Pageable pageable) {
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(@PageableDefault(size = 20, sort = "name") Pageable pageable) {
         Page<ProductResponse> productPageResponse = catalogService.getProducts(pageable);
         return ResponseEntity.ok(productPageResponse);
     }
 
     @GetMapping("/name")
-    public ResponseEntity<ProductResponse> retrieveProductByName(@RequestParam("name") String name) {
+    public ResponseEntity<ProductResponse> getProductByName(@RequestParam("name") String name) {
         ProductResponse product = catalogService.getProductByName(name);
         return ResponseEntity.ok(product);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponse> retrieveProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         Product product = catalogService.getProductById(id);
         return ResponseEntity.ok(productMapper.toProductResponse(product));
     }
 
     @GetMapping("/category")
-    public ResponseEntity<List<ProductResponse>> retrieveProductsByCategory(@RequestParam Category category) {
+    public ResponseEntity<List<ProductResponse>> getProductsByCategory(@RequestParam Category category) {
 
         List<ProductResponse> productResponses = catalogService.getProductsByCategoryName(category)
                 .stream()
