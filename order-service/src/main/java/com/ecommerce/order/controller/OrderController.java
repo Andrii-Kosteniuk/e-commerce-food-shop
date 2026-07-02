@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,11 +37,9 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request, @RequestHeader("X-User-Id") Long userId) {
 
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        var order = modifiedService.createOrder(email, request);
+        var order = modifiedService.createOrder(request, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
