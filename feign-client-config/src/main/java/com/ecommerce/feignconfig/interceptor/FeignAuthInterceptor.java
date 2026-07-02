@@ -3,12 +3,11 @@ package com.ecommerce.feignconfig.interceptor;
 import com.ecommerce.security.filter.InternalAuthenticationFilter;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.Collection;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,24 +19,20 @@ public class FeignAuthInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate requestTemplate) {
         requestTemplate.header(InternalAuthenticationFilter.HEADER_INTERNAL_API_KEY, internalApiKey);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        ServletRequestAttributes requestAttributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return;
+        if (requestAttributes != null) {
+
+            HttpServletRequest req = requestAttributes.getRequest();
+
+            String email = req.getHeader(InternalAuthenticationFilter.HEADER_USER_EMAIL);
+            String userId = req.getHeader(InternalAuthenticationFilter.HEADER_USER_ID);
+            String role = req.getHeader(InternalAuthenticationFilter.HEADER_USER_ROLE);
+
+            if (email != null) requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_EMAIL, email);
+            if (userId != null) requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_ID, userId);
+            if (role != null) requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_ROLE, role);
         }
-
-        requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_EMAIL, authentication.getName());
-
-        Object userId = authentication.getCredentials();
-        if (userId != null) {
-            requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_ID, String.valueOf(userId));
-        }
-
-        Collection<?> authorities = authentication.getAuthorities();
-        if (authorities != null && !authorities.isEmpty()) {
-            String role = authorities.iterator().next().toString();
-            requestTemplate.header(InternalAuthenticationFilter.HEADER_USER_ROLE, role);
-        }
-
     }
 }
