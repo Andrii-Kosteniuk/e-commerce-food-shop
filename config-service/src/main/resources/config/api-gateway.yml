@@ -38,40 +38,26 @@ eureka:
     service-url:
       defaultZone: http://discovery-service:8761/eureka/
   instance:
-    prefer-ip-address: false
+    prefer-ip-address: true
     hostname: api-gateway
     instance-id: ${spring.application.name}:${server.port}
     home-page-url: http://api-gateway:${server.port}/
-    status-page-url: http://api-gateway:${server.port}/actuator/info
-    health-check-url: http://api-gateway:${server.port}/actuator/health
-
 
 
 security:
   internal-api-key: ${SECURITY_INTERNAL_API_KEY}
 
-resilience4j.circuitbreaker:
-  configs:
-    default:
-      slidingWindowSize: 50
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 50
 
-resilience4j.timelimiter:
-  configs:
-    default:
-      timeoutDuration: 5s
-      cancelRunningFuture: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: always
-  health:
-    eureka:
-      enabled: false
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
 
 gateway:
   path:
