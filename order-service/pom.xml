@@ -51,7 +51,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>4.2.1</version>
         </dependency>
 
         <dependency>
@@ -136,8 +135,10 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.20.2</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
