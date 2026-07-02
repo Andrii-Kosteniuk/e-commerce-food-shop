@@ -6,10 +6,11 @@ import com.ecommerce.commondto.kafka.PaymentCreateEvent;
 import com.ecommerce.commondto.order.OrderCreateRequest;
 import com.ecommerce.commondto.order.OrderResponse;
 import com.ecommerce.commondto.order.StockItem;
+import com.ecommerce.commondto.product.ProductResponse;
 import com.ecommerce.commondto.user.UserResponse;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
-import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.kafka.producers.KafkaEventPublisher;
+import com.ecommerce.kafka.utils.KafkaTopics;
 import com.ecommerce.order.feign.ProductFeignClient;
 import com.ecommerce.order.feign.UserFeignClient;
 import com.ecommerce.order.mapper.OrderMapper;
@@ -22,7 +23,6 @@ import com.ecommerce.order.service.OrderModifiedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +49,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
     @Override
     @Transactional
-    public OrderResponse createOrder(String email, OrderCreateRequest request) {
+    public OrderResponse createOrder(OrderCreateRequest request, Long id) {
 
-        UserResponse user = userClient.getUserByEmail(email);
+        UserResponse user = userClient.getUserById(id);
 
         List<OrderItem> items = processBuildingOrderItemsFromRequest(request);
 
@@ -73,11 +73,11 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                 KafkaTopics.ORDER_CREATED,
                 order.getId().toString(),
                 new OrderCreatedEvent(
-                order.getId(),
-                user.id(),
-                user.email(),
-                order.getTotalPrice(),
-                order.getStatus().name(),
+                        order.getId(),
+                        user.id(),
+                        user.email(),
+                        order.getTotalPrice(),
+                        order.getStatus().name(),
                         orderMapper.toOrderResponse(order))
         );
 
@@ -89,9 +89,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     @Override
     public void updateOrderStatus(Order order, OrderStatus newStatus) {
 
-            if (validateStatusTransition(order.getStatus(), newStatus)) {
-                order.setStatus(newStatus);
-            }
+        if (validateStatusTransition(order.getStatus(), newStatus)) {
+            order.setStatus(newStatus);
+        }
 
         log.info("Order status updated for orderId: {}", order.getId());
     }
@@ -108,9 +108,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         orderRepository.save(order);
 
         var items = order.getItems()
-                        .stream()
-                        .map(item -> new StockItem(item.getProductId(), item.getQuantity()))
-                        .toList();
+                .stream()
+                .map(item -> new StockItem(item.getProductId(), item.getQuantity()))
+                .toList();
 
 
         kafkaEventPublisher.publish(
@@ -133,7 +133,7 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     public OrderResponse confirmOrder(Long orderId, Long userId) {
 
         Order orderById = orderCatalogService.getOrderById(orderId)
-                .orElseThrow(()-> new ResourceNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Order with id '%d' not found", orderId)));
 
         if (!orderById.getUserId().equals(userId)) {
@@ -144,10 +144,10 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
 
         updateOrderStatus(orderById, OrderStatus.CONFIRMED);
 
-            kafkaEventPublisher.publish(
-                    KafkaTopics.PAYMENT_CREATE,
-                    orderId.toString(), new PaymentCreateEvent(orderId, userId, orderById.getTotalPrice())
-            );
+        kafkaEventPublisher.publish(
+                KafkaTopics.PAYMENT_CREATE,
+                orderId.toString(), new PaymentCreateEvent(orderId, userId, orderById.getTotalPrice())
+        );
 
         log.info("Order confirmed event was published for orderId: {} ", orderId);
 
@@ -160,8 +160,9 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
         }
 
         Map<OrderStatus, Set<OrderStatus>> allowed = Map.of(
-                OrderStatus.NEW,       Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
-                OrderStatus.CONFIRMED, Set.of(OrderStatus.PAID,   OrderStatus.CANCELLED),
+                OrderStatus.NEW, Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
+                OrderStatus.CONFIRMED, Set.of(OrderStatus.PAID, OrderStatus.CANCELLED),
+                OrderStatus.PAID, Set.of(),
                 OrderStatus.CANCELLED, Set.of()
         );
 
@@ -184,15 +185,11 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
     }
 
     private List<OrderItem> processBuildingOrderItemsFromRequest(OrderCreateRequest request) {
-       return request.products().stream()
+        return request.products().stream()
                 .map(item -> {
                     var productInfo = productClient.getProductById(item.productId());
 
-                    if (productInfo.quantity() < item.quantity()) {
-                        log.warn("Insufficient stock for product: {}. Available: {}", item.productId(), productInfo.quantity());
-                        throw new IllegalArgumentException(String.format(
-                                "Insufficient stock for '%s'. Available: %d", productInfo.name(), productInfo.quantity()));
-                    }
+                    checkStock(productInfo, item);
 
                     return OrderItem.builder()
                             .productId(productInfo.id())
@@ -203,5 +200,13 @@ public class OrderModifiedServiceImpl implements OrderModifiedService {
                             .build();
                 })
                 .toList();
+    }
+
+    private void checkStock(ProductResponse productResponse, StockItem stockItem) {
+        if (productResponse.quantity() < stockItem.quantity()) {
+            log.warn("Insufficient stock for product: {}. Available: {}", stockItem.productId(), productResponse.quantity());
+            throw new IllegalArgumentException(String.format(
+                    "Insufficient stock for '%s'. Available: %d", productResponse.name(), productResponse.quantity()));
+        }
     }
 }
