@@ -1,5 +1,6 @@
 package com.ecommerce.security.filter;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,8 +31,8 @@ public class InternalAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                      HttpServletResponse response,
-                                      FilterChain filterChain) throws ServletException, IOException {
+                                    @Nonnull HttpServletResponse response,
+                                    @Nonnull FilterChain filterChain) throws ServletException, IOException {
         String providedKey = request.getHeader(HEADER_INTERNAL_API_KEY);
 
         if (internalApiKey == null || !internalApiKey.equals(providedKey)) {
@@ -50,7 +51,9 @@ public class InternalAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(email, userId, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("SecurityContext set for user: {}", email);
+            log.info("SecurityContext set for user: {}, role: {}", email, role);
+        } else {
+            log.warn("SecurityContext NOT set — email or role missing — email='{}', role='{}'", email, role);
         }
 
         filterChain.doFilter(request, response);
