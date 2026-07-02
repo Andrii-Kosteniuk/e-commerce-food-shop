@@ -12,30 +12,34 @@ spring:
       password: ${REDIS_PASSWORD}
 
   cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
     loadbalancer:
       retry:
         enabled: false
 resilience4j:
   circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 50
+        register-health-indicator: true
     instances:
-      payment-service:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 3
-        slow-call-duration-threshold: 2s
-        slow-call-rate-threshold: 50
-      user-service:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 3
-        slow-call-duration-threshold: 2s
-        slow-call-rate-threshold: 50
+      user-service: {}
+
   timelimiter:
+    configs:
+      default:
+        timeout-duration: 2s
+        cancel-running-future: true
     instances:
-      payment-service:
-        timeout-duration: 3s
+      user-service: { }
 
 eureka:
   client:

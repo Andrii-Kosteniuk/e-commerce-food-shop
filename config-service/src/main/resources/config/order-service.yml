@@ -43,16 +43,33 @@ spring:
 
 resilience4j:
   circuitbreaker:
-    instances:
-      payment-service:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
         sliding-window-size: 10
+        minimum-number-of-calls: 5
         failure-rate-threshold: 50
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
         slow-call-duration-threshold: 2s
         slow-call-rate-threshold: 50
-  timelimiter:
+        register-health-indicator: true
     instances:
+      product-service: {}
+      user-service: {}
+      payment-service:
+        failure-rate-threshold: 40
+        wait-duration-in-open-state: 20s
+        minimum-number-of-calls: 5
+
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 2s
+        cancel-running-future: true
+    instances:
+      product-service: {}
+      user-service: {}
       payment-service:
         timeout-duration: 3s
 
