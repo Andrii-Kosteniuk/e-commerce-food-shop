@@ -1,0 +1,7 @@
+security:
+  internal-api-key: sk_live_YN0G3D7pfolfJJkI3HNScpR5fMbsFNTm
+
+gateway:
+  path:
+    public: /api/v1/auth/
+    internal: /api/v1/internal/
