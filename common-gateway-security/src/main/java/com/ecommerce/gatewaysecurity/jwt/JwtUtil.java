@@ -13,8 +13,11 @@ import javax.crypto.SecretKey;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final String jwtSecret;
+
+    public JwtUtil(@Value("${jwt.secret}")String jwtSecret) {
+        this.jwtSecret = jwtSecret;
+    }
 
     public boolean isValidToken(String token) {
         try {
