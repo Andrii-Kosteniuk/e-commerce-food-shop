@@ -1,4 +1,4 @@
-package com.ecommerce.gatewaysecurity;
+package com.ecommerce.gateway;
 
 import com.ecommerce.gatewaysecurity.filter.GatewayAuthenticationFilter;
 import com.ecommerce.gatewaysecurity.jwt.JwtUtil;
