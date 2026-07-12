@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+
+security:
+  internal-api-key: api-key
