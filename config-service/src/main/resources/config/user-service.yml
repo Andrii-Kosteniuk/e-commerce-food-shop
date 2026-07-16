@@ -21,3 +21,5 @@ spring:
 
 security:
   internal-api-key: ${SECURITY_INTERNAL_API_KEY}
+  token-blocklist:
+    prefix: blocklist
