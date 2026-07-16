@@ -1,6 +1,7 @@
 package com.ecommerce.gatewaysecurity.filter;
 
 import com.ecommerce.gatewaysecurity.jwt.JwtUtil;
+import com.ecommerce.security.token.TokenBlocklistKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,14 +30,13 @@ public class GatewayAuthenticationFilter implements WebFilter {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${gateway.path.public}")
-    private  String publicPath;
+    private String publicPath;
     @Value("${gateway.path.internal}")
     private String internalPath;
-    private static final List<String> EXCLUDED_PATHS =
-            List.of(
-                    "/actuator/health",
-                    "/actuator/info"
-    );
+    @Value("${security.token-blocklist.prefix:#{null}}")
+    private String blocklistPrefix;
+
+    private static final List<String> EXCLUDED_PATHS = List.of("/actuator/health", "/actuator/info");
 
     @Value("${security.internal-api-key}")
     private String internalApiKey;
@@ -73,7 +73,7 @@ public class GatewayAuthenticationFilter implements WebFilter {
         String email = jwtUtil.extractEmail(token);
         String role = jwtUtil.extractRole(token);
 
-        boolean hasKey = redisTemplate.hasKey("blocklist:" + tokenId);
+        boolean hasKey = redisTemplate.hasKey(TokenBlocklistKeys.key(blocklistPrefix, tokenId));
 
         if (hasKey) {
             log.warn("Token is blocklisted");
