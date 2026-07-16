@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -56,21 +55,10 @@ public class JwtService {
         return buildToken(userId, email, role, accessTokenExpirationTime, "access");
     }
 
-    public List<String> getRolesFromToken(String token) {
+    public String getUserRoleFromToken(String token) {
         Claims claims = extractClaims(token);
-        Object role = claims.get("role");
 
-        if (role instanceof String roleStr) {
-            return List.of(roleStr);
-        }
-
-        if (role instanceof List<?> list) {
-            return list.stream()
-                    .map(Object::toString)
-                    .toList();
-        }
-
-        return List.of();
+        return claims.get("role", String.class);
     }
 
     public String generateRefreshToken(Long userId, String email, String role) {
