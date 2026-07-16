@@ -25,7 +25,7 @@ public class TokenBlocklistService {
 
     }
 
-    public Boolean isRevoked(String tokenId) {
+    public boolean isRevoked(String tokenId) {
         return redisTemplate.hasKey(blocklistKey(tokenId));
     }
 
