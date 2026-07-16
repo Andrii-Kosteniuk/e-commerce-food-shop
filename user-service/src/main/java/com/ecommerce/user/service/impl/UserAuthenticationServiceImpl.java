@@ -9,7 +9,7 @@ import com.ecommerce.user.mapper.UserMapper;
 import com.ecommerce.user.model.Role;
 import com.ecommerce.user.model.User;
 import com.ecommerce.user.repository.UserRepository;
-import com.ecommerce.user.security.TokenBlocklistService;
+import com.ecommerce.user.service.TokenBlocklistService;
 import com.ecommerce.user.service.UserAuthenticationService;
 import com.ecommerce.user.service.UserRepositoryService;
 import io.jsonwebtoken.JwtException;
@@ -20,6 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -125,14 +127,20 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
                 throw new JwtException("Not a " + expectedType + " token");
             }
 
-            long remaining = extractedClaims.getExpiration().getTime() - System.currentTimeMillis();
+            Date expiration = extractedClaims.getExpiration();
+            long remaining = expiration.getTime() - System.currentTimeMillis();
 
-            if (remaining > 0) {
-                String tokenId = extractedClaims.get("tokenId", String.class);
-                tokenBlocklistService.revoke(tokenId, remaining);
+            if (remaining <= 0) {
+                return;
             }
+
+            String tokenId = extractedClaims.get("tokenId", String.class);
+            tokenBlocklistService.revoke(tokenId, remaining);
+
         } catch (JwtException e) {
             log.warn("Token invalid or expired during logout, skipping revocation: {}", e.getMessage());
         }
     }
+
+
 }
