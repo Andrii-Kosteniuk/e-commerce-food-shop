@@ -1,5 +1,6 @@
-package com.ecommerce.user.security;
+package com.ecommerce.user.service;
 
+import com.ecommerce.security.token.TokenBlocklistKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TokenBlocklistService {
 
-    private static final String DEFAULT_PREFIX = "blocklist";
-
     private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${security.token-blocklist.prefix:#{null}}")
-    private String prefix;
+    private String blocklistPrefix;
 
     public void revoke(String tokenId, long expiryMillis) {
         redisTemplate.opsForValue()
@@ -26,15 +25,11 @@ public class TokenBlocklistService {
 
     }
 
-    public boolean isRevoked(String tokenId) {
+    public Boolean isRevoked(String tokenId) {
         return redisTemplate.hasKey(blocklistKey(tokenId));
     }
 
     private String blocklistKey(String tokenId) {
-        return resolvePrefix() + ":" + tokenId;
-    }
-
-    private String resolvePrefix() {
-        return (prefix != null && !prefix.isBlank()) ? prefix : DEFAULT_PREFIX;
+        return TokenBlocklistKeys.key(blocklistPrefix, tokenId);
     }
 }
