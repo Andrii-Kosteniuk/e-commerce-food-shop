@@ -31,7 +31,7 @@ class AuthControllerTests {
 
     @Test
     void shouldRegisterUser() throws Exception {
-
+        // ARRANGE
         RegisterRequest request = new RegisterRequest(
                 "Andrii",
                 "Kosteniuk",
@@ -48,6 +48,8 @@ class AuthControllerTests {
 
         when(authService.registerUser(request)).thenReturn(response);
 
+        // ACT
+        // ASSERT
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -64,6 +66,7 @@ class AuthControllerTests {
     @Test
     void shouldLoginUser() throws Exception {
 
+        // ARRANGE
         AuthenticationRequest request = new AuthenticationRequest(
                 "andrii@gmail.com",
                 "andrii777"
@@ -78,6 +81,8 @@ class AuthControllerTests {
 
         when(authService.authenticate(request)).thenReturn(response);
 
+        // ACT
+        // ASSERT
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -94,6 +99,7 @@ class AuthControllerTests {
     @Test
     void shouldRefreshToken() throws Exception {
 
+        // ARRANGE
         RefreshTokenRequest request = new RefreshTokenRequest("refresh-token");
 
         AuthenticationResponse response =
@@ -104,6 +110,8 @@ class AuthControllerTests {
 
         when(authService.refreshToken(request)).thenReturn(response);
 
+        // ACT
+        // ASSERT
         mockMvc.perform(post("/api/v1/auth/refresh-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -119,7 +127,7 @@ class AuthControllerTests {
 
     @Test
     void shouldLogoutUser() throws Exception {
-
+        // ARRANGE
         LogOutRequest request = new LogOutRequest(
                 "access-token",
                 "refresh-token");
@@ -127,6 +135,8 @@ class AuthControllerTests {
 
         doNothing().when(authService).logout(request);
 
+        // ACT
+        // ASSERT
         mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
