@@ -1,6 +1,6 @@
 package com.ecommerce.user.jwt;
 
-import com.ecommerce.user.security.TokenBlocklistService;
+import com.ecommerce.user.service.TokenBlocklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (! hasAuthorizationBearer(request)) {
+        if (!hasAuthorizationBearer(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = retrieveTokenFormHeader(request);
 
         if (!jwtService.validateToken(accessToken)) {
-            filterChain.doFilter(request, response);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             return;
         }
 
@@ -58,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean hasAuthorizationBearer(HttpServletRequest request) {
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        return ! ObjectUtils.isEmpty(authorizationHeader) && authorizationHeader.startsWith("Bearer");
+        return !ObjectUtils.isEmpty(authorizationHeader) && authorizationHeader.startsWith("Bearer");
     }
 
     private String retrieveTokenFormHeader(HttpServletRequest request) {
@@ -68,10 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void setAuthenticationContext(String token, HttpServletRequest request) {
         String username = jwtService.extractClaims(token).getSubject();
-        log.info("Extracted username from token: {}", username);
-        List<GrantedAuthority> authorities = jwtService.getRolesFromToken(token).stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(jwtService.getUserRoleFromToken(token)));
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(username, null, authorities);
