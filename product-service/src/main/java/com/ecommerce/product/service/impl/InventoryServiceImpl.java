@@ -2,6 +2,7 @@ package com.ecommerce.product.service.impl;
 
 import com.ecommerce.commonexception.exception.InsufficientStockException;
 import com.ecommerce.commonexception.exception.ResourceNotFoundException;
+import com.ecommerce.product.model.Product;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.product.service.InventoryService;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +31,14 @@ public class InventoryServiceImpl implements InventoryService {
         int updatedRows = productRepository.decreaseStock(productId, quantity);
 
         if (updatedRows == 0) {
-            boolean exists = productRepository.existsById(productId);
-            if (!exists) {
-                throw new ResourceNotFoundException(
-                        String.format("Product with id '%d' not found", productId));
-            }
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            String.format("Product with id '%d' not found", productId)));
+
             throw new InsufficientStockException(
                     String.format(
-                            "Insufficient stock for product id '%d'. Requested: %d",
-                            productId, quantity));
+                            "Insufficient stock for product id '%d'. Requested: %d, Available: %d",
+                            productId, quantity, product.getQuantity()));
         }
 
         log.info("Decreased stock for product {} by {}", productId, quantity);
